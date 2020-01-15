@@ -1,0 +1,427 @@
+---
+title: "Plotting of relative abundance of responding phyla to amendment in the Incubation Project"
+output:
+  html_document:
+    df_print: paged
+    fig_width: 8.5
+    fig_height: 11
+    fig_caption: true
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hide
+---
+```{r setup}
+knitr::opts_knit$set(root.dir = normalizePath("."))
+```
+
+```{r, cache=TRUE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(c("phyloseq", "DESeq2"))
+```
+
+```{r, echo = F, message = F, warning = F}
+# Load libraries
+library(tidyverse)
+library(phyloseq)
+library(DESeq2)
+library(naniar)
+library(ggrepel)
+library(viridis)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+```
+
+```{r}
+inc.physeq <- readRDS("../data/not.rare.nounclass")
+source("../code/functions.R")
+```
+
+```{r}
+early_alf_OTUS <- readRDS("../data/LFC>2_early_alf_OTUs.RDS")
+late_alf_OTUS <- readRDS("../data/LFC>2_late_alf_OTUs.RDS")
+all_alf <- readRDS("../data/LFC_alf_OTUs.RDS")
+```
+
+# Alfalfa Area
+
+Do the responding OTUs always represent a significant relative abundance?
+
+Let's visualize the relative abundance of the significantly responding genera in each treatment. We will use a stacked area chart.
+
+```{r, warning=FALSE}
+# We want to visualise the alfalfa treatment responding OTUs from early and late to reference. 
+# Use two plots faceted by treatment
+alf <- subset_samples(inc.physeq, treatment %in% c("Alfalfa") & day %in% c("0", "7", "14", "21", "35", "49", "97")) 
+
+ref <- subset_samples(inc.physeq, treatment %in% c("Reference") & day %in% c("0", "7", "14", "21", "35", "49", "97")) 
+
+# We have multiple replicates for each combination of treatment and day, here we merge the samples from each combination
+# merge messes with the columns, we can fix with sample_data()
+rela.phy <- merge_samples(alf, "day") 
+rela.phy.data <- data.frame(sample_data(rela.phy))
+sample_data(rela.phy)$day = sample_names(rela.phy)
+sample_data(rela.phy)$treatment = "Alfalfa"
+
+ref.phy <- merge_samples(ref, "day")
+ref.phy.data <- data.frame(sample_data(ref.phy))
+sample_data(ref.phy)$day = sample_names(ref.phy)
+sample_data(ref.phy)$treatment = "Reference"
+
+# melt each into a data structure
+meltalf <- rela.phy %>%
+  transform_sample_counts(function(x) x / sum(x)) %>%
+  psmelt() %>%
+  select(OTU, Abundance, treatment, day, Phylum)
+
+meltref <- ref.phy %>%
+  transform_sample_counts(function(x) x / sum(x)) %>%
+  psmelt() %>%
+  select(OTU, Abundance, treatment, day, Phylum)
+```
+
+```{r, warning=FALSE} 
+# We need a data frame with the relative abundance of the responding Phyla
+data <- rbind(meltalf, meltref) %>%
+  mutate(Responder = ifelse(OTU %in% early_alf_OTUS$OTU, "Responding", "Not_responding")) %>%
+  filter(Responder == "Responding") %>%
+  group_by(treatment, day, Phylum) %>%
+  mutate(phyla_sum = sum(Abundance)) %>%
+  select(treatment, day, Phylum, phyla_sum) %>%
+  distinct()
+
+datalate <- rbind(meltalf, meltref) %>%
+  mutate(Responder = ifelse(OTU %in% late_alf_OTUS$OTU, "Responding", "Not_responding")) %>%
+  filter(Responder == "Responding") %>%
+  group_by(treatment, day, Phylum) %>%
+  mutate(phyla_sum = sum(Abundance)) %>%
+  select(treatment, day, Phylum, phyla_sum) %>%
+  distinct()
+```
+
+```{r}
+# We can sort the data based on abundance at day 7, this makes a cleaner graph
+myLevels <- data %>%
+  filter(day==7 & treatment == "Alfalfa")%>%
+  arrange(desc(phyla_sum))
+
+data$Phylum <- factor(data$Phylum, levels = myLevels$Phylum) 
+
+pp <- data %>%
+  ggplot(aes(x= as.numeric(day), y=phyla_sum)) + 
+  geom_area(aes(fill = Phylum), size=.25, colour="black") + 
+  facet_grid(treatment ~ .) 
+  
+#pp
+
+ppp <- pp + 
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +
+  xlab("Day") +
+  ylab("Relative abundance \n of responders (LFC > 2)") +
+  ggtitle("Early alfalfa responders") 
+#ppp
+```
+```{r}
+# Sort based on abundance at day 35, determine order
+myLevels2 <- datalate %>%
+  filter(day==35 & treatment == "Alfalfa") %>%
+  arrange(desc(phyla_sum))
+
+# Set order of Phyla based on abundance at day 35
+datalate$Phylum <- factor(datalate$Phylum, levels = myLevels2$Phylum) 
+  
+plot2 <- datalate %>%
+  ggplot(aes(x= as.numeric(day), y=phyla_sum)) + 
+  geom_area(aes(fill = Phylum), size=.25, colour="black") + 
+  facet_grid(treatment ~ .) 
+
+#plot2
+
+# Add titles and scale x-axis
+pplot2 <- plot2 + 
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +
+  xlab("Day") +
+  ylab("Relative abundance \n of responders (LFC > 2)") +
+  ggtitle("Late alfalfa responders") 
+
+#pplot2
+```
+
+Note on coloring, it's annoying how phyla with have different colors between plots, let's see if we can fix that
+```{r}
+# We have many more colors need, it would be easiest to have one that can cover all levels of phyla
+# list of phyla
+phylalist <- sample(as.character(unique(all_alf$Phylum))) # note the sample(), this randomizes the list, if you leave it you may find colors to similar that are close to each other. 
+
+# this package will generate a pallette based on number and desired colors
+library(colorspace)
+colors27 <- sequential_hcl(n_distinct(phylalist), palette = "viridis")
+
+# I found this on stackoverflow
+# It's a function that will assign a color to a specific phylum
+scale_fill_phyla_consistent <- function(...){
+    ggplot2:::manual_scale(
+        'fill', 
+        values = setNames(colors27, phylalist), 
+        ...
+    )
+}
+
+
+ppp + scale_fill_phyla_consistent()
+pplot2 + scale_fill_phyla_consistent()
+# Save 
+png("../Figures/alfalfa_early_area_responders.png",height=8,width=10,units='in',res=300)
+ppp + scale_fill_phyla_consistent()
+dev.off()
+png("../Figures/alfalfa_late_area_responders.png",height=8,width=10,units='in',res=300)
+pplot2 + scale_fill_phyla_consistent()
+dev.off()
+```
+
+# Compost Area
+```{r}
+early_comp_OTUS <- readRDS("../data/LFC>2_early_comp_OTUs.RDS")
+late_comp_OTUS <- readRDS("../data/LFC>2_late_comp_OTUs.RDS")
+all_comp <- readRDS("../data/LFC_comp_OTUs.RDS")
+```
+
+```{r}
+comp <- subset_samples(inc.physeq, treatment %in% c("Compost") & day %in% c("0", "7", "14", "21", "35", "49", "97")) 
+
+rela.phy <- merge_samples(comp, "day") 
+rela.phy.data <- data.frame(sample_data(rela.phy))
+sample_data(rela.phy)$day = sample_names(rela.phy)
+sample_data(rela.phy)$treatment = "Compost"
+
+# melt into a data structure
+meltcomp <- rela.phy %>%
+  transform_sample_counts(function(x) x / sum(x)) %>%
+  psmelt() %>%
+  select(OTU, Abundance, treatment, day, Phylum)
+```
+
+```{r} 
+# We need a data frame with the relative abundance of the responding Phyla
+data <- rbind(meltcomp, meltref) %>%
+  mutate(Responder = ifelse(OTU %in% early_comp_OTUS$OTU, "Responding", "Not_responding")) %>%
+  filter(Responder == "Responding") %>%
+  group_by(treatment, day, Phylum) %>%
+  mutate(phyla_sum = sum(Abundance)) %>%
+  select(treatment, day, Phylum, phyla_sum) %>%
+  distinct()
+
+datalate <- rbind(meltcomp, meltref) %>%
+  mutate(Responder = ifelse(OTU %in% late_comp_OTUS$OTU, "Responding", "Not_responding")) %>%
+  filter(Responder == "Responding") %>%
+  group_by(treatment, day, Phylum) %>%
+  mutate(phyla_sum = sum(Abundance)) %>%
+  select(treatment, day, Phylum, phyla_sum) %>%
+  distinct()
+```
+
+```{r}
+# We can sort the data based on abundance at day 7, this makes a cleaner graph
+myLevels <- data %>%
+  filter(day==7 & treatment == "Compost")%>%
+  arrange(desc(phyla_sum))
+
+data$Phylum <- factor(data$Phylum, levels = myLevels$Phylum) 
+
+pp <- data %>%
+  ggplot(aes(x= as.numeric(day), y=phyla_sum)) + 
+  geom_area(aes(fill = Phylum), size=.25, colour="black") + 
+  facet_grid(treatment ~ .) 
+  
+#pp
+
+ppp <- pp + 
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +
+  xlab("Day") +
+  ylab("Relative abundance \n of responders (LFC > 2)") +
+  ggtitle("Early Compost responders") 
+#ppp
+```
+```{r}
+# Sort based on abundance at day 35, determine order
+myLevels2 <- datalate %>%
+  filter(day==35 & treatment == "Compost") %>%
+  arrange(desc(phyla_sum))
+
+# Set order of Phyla based on abundance at day 35
+datalate$Phylum <- factor(datalate$Phylum, levels = myLevels2$Phylum) 
+  
+plot2 <- datalate %>%
+  ggplot(aes(x= as.numeric(day), y=phyla_sum)) + 
+  geom_area(aes(fill = Phylum), size=.25, colour="black") + 
+  facet_grid(treatment ~ .) 
+
+#plot2
+
+# Add titles and scale x-axis
+pplot2 <- plot2 + 
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +
+  xlab("Day") +
+  ylab("Relative abundance \n of responders (LFC > 2)") +
+  ggtitle("Late Compost responders") 
+
+#pplot2
+```
+
+Note on coloring, it's annoying how phyla with have different colors between plots, let's see if we can fix that
+```{r}
+# We have many more colors need, it would be easiest to have one that can cover all levels of phyla
+# list of phyla
+phylalist <- sample(as.character(unique(all_comp$Phylum))) # note the sample(), this randomizes the list, if you leave it you may find colors to similar that are close to each other. 
+
+# this package will generate a pallette based on number and desired colors
+library(colorspace)
+colors27 <- sequential_hcl(n_distinct(phylalist), palette = "viridis")
+
+# I found this on stackoverflow
+# It's a function that will assign a color to a specific phylum
+scale_fill_phyla_consistent <- function(...){
+    ggplot2:::manual_scale(
+        'fill', 
+        values = setNames(colors27, phylalist), 
+        ...
+    )
+}
+
+
+ppp + scale_fill_phyla_consistent()
+pplot2 + scale_fill_phyla_consistent()
+
+# Save 
+png("../Figures/compost_early_area_responders.png",height=8,width=10,units='in',res=300)
+ppp + scale_fill_phyla_consistent()
+dev.off()
+png("../Figures/compost_late_area_responders.png",height=8,width=10,units='in',res=300)
+pplot2 + scale_fill_phyla_consistent()
+dev.off()
+```
+
+# Mix Area
+```{r}
+early_mix_OTUS <- readRDS("../data/LFC>2_early_mix_OTUs.RDS")
+late_mix_OTUS <- readRDS("../data/LFC>2_late_mix_OTUs.RDS")
+all_mix <- readRDS("../data/LFC_mix_OTUs.RDS")
+```
+
+```{r, warning=FALSE}
+mix <- subset_samples(inc.physeq, treatment %in% c("Mix") & day %in% c("0", "7", "14", "21", "35", "49", "97")) 
+
+rela.phy <- merge_samples(mix, "day") 
+rela.phy.data <- data.frame(sample_data(rela.phy))
+sample_data(rela.phy)$day = sample_names(rela.phy)
+sample_data(rela.phy)$treatment = "mix"
+
+# melt into a data structure
+meltmix <- rela.phy %>%
+  transform_sample_counts(function(x) x / sum(x)) %>%
+  psmelt() %>%
+  select(OTU, Abundance, treatment, day, Phylum)
+```
+
+```{r} 
+# We need a data frame with the relative abundance of the responding Phyla
+data <- rbind(meltmix, meltref) %>%
+  mutate(Responder = ifelse(OTU %in% early_mix_OTUS$OTU, "Responding", "Not_responding")) %>%
+  filter(Responder == "Responding") %>%
+  group_by(treatment, day, Phylum) %>%
+  mutate(phyla_sum = sum(Abundance)) %>%
+  select(treatment, day, Phylum, phyla_sum) %>%
+  distinct()
+
+datalate <- rbind(meltmix, meltref) %>%
+  mutate(Responder = ifelse(OTU %in% late_mix_OTUS$OTU, "Responding", "Not_responding")) %>%
+  filter(Responder == "Responding") %>%
+  group_by(treatment, day, Phylum) %>%
+  mutate(phyla_sum = sum(Abundance)) %>%
+  select(treatment, day, Phylum, phyla_sum) %>%
+  distinct()
+```
+
+```{r}
+# We can sort the data based on abundance at day 7, this makes a cleaner graph
+myLevels <- data %>%
+  filter(day==7 & treatment == "mix")%>%
+  arrange(desc(phyla_sum))
+
+data$Phylum <- factor(data$Phylum, levels = myLevels$Phylum) 
+
+pp <- data %>%
+  ggplot(aes(x= as.numeric(day), y=phyla_sum)) + 
+  geom_area(aes(fill = Phylum), size=.25, colour="black") + 
+  facet_grid(treatment ~ .) 
+  
+#pp
+
+ppp <- pp + 
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +
+  xlab("Day") +
+  ylab("Relative abundance \n of responders (LFC > 2)") +
+  ggtitle("Early mix responders") 
+#ppp
+```
+```{r}
+# Sort based on abundance at day 35, determine order
+myLevels2 <- datalate %>%
+  filter(day==35 & treatment == "mix") %>%
+  arrange(desc(phyla_sum))
+
+# Set order of Phyla based on abundance at day 35
+datalate$Phylum <- factor(datalate$Phylum, levels = myLevels2$Phylum) 
+  
+plot2 <- datalate %>%
+  ggplot(aes(x= as.numeric(day), y=phyla_sum)) + 
+  geom_area(aes(fill = Phylum), size=.25, colour="black") + 
+  facet_grid(treatment ~ .) 
+
+#plot2
+
+# Add titles and scale x-axis
+pplot2 <- plot2 + 
+  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +
+  xlab("Day") +
+  ylab("Relative abundance \n of responders (LFC > 2)") +
+  ggtitle("Late mix responders") 
+
+#pplot2
+```
+
+Note on coloring, it's annoying how phyla with have different colors between plots, let's see if we can fix that
+```{r}
+# We have many more colors need, it would be easiest to have one that can cover all levels of phyla
+# list of phyla
+phylalist <- sample(as.character(unique(all_mix$Phylum))) # note the sample(), this randomizes the list, if you leave it you may find colors to similar that are close to each other. 
+
+# this package will generate a pallette based on number and desired colors
+library(colorspace)
+colors27 <- sequential_hcl(n_distinct(phylalist), palette = "viridis")
+
+# I found this on stackoverflow
+# It's a function that will assign a color to a specific phylum
+scale_fill_phyla_consistent <- function(...){
+    ggplot2:::manual_scale(
+        'fill', 
+        values = setNames(colors27, phylalist), 
+        ...
+    )
+}
+
+
+ppp + scale_fill_phyla_consistent()
+pplot2 + scale_fill_phyla_consistent()
+
+# Save 
+png("../Figures/mix_early_area_responders.png",height=8,width=10,units='in',res=300)
+ppp + scale_fill_phyla_consistent()
+dev.off()
+png("../Figures/mix_late_area_responders.png",height=8,width=10,units='in',res=300)
+pplot2 + scale_fill_phyla_consistent()
+dev.off()
+```

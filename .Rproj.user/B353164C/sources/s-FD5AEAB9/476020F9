@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1579114326748.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "476020F9",
+    "lastKnownWriteTime" : 1579029716,
+    "last_content_update" : 1579029716,
+    "path" : "~/Documents/Incubation/code/phyla_rela_abund_responders.Rmd",
+    "project_path" : "code/phyla_rela_abund_responders.Rmd",
+    "properties" : {
+        "cursorPosition" : "313,20",
+        "last_setup_crc32" : "F73D28F1ee00eb0e",
+        "marks" : "<:48,2\n>:48,2",
+        "scrollLine" : "325"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

@@ -1,0 +1,5 @@
+"0","# Common responders in all amendments and response groups"
+"0","new_DF <- df3[rowSums(is.na(df3)) == 0,]"
+"0","kable(new_DF) %>%"
+"0","  kable_styling(bootstrap_options = ""striped"") %>%"
+"0","  scroll_box(width = ""100%"", height = ""400px"")"

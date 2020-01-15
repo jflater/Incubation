@@ -5,17 +5,17 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "3803501494",
+    "hash" : "3504768372",
     "id" : "DE2BE5D6",
-    "lastKnownWriteTime" : 1579112913,
-    "last_content_update" : 1579112913302,
+    "lastKnownWriteTime" : 1579118091,
+    "last_content_update" : 1579118091072,
     "path" : "~/Documents/Incubation/code/paulstree.Rmd",
     "project_path" : "code/paulstree.Rmd",
     "properties" : {
-        "cursorPosition" : "89,39",
+        "cursorPosition" : "105,30",
         "last_setup_crc32" : "FD5AEAB9ee00eb0e",
-        "marks" : "<:41,16\n>:41,16",
-        "scrollLine" : "72"
+        "marks" : "<:101,24\n>:101,24",
+        "scrollLine" : "97"
     },
     "read_only" : false,
     "read_only_alternatives" : [

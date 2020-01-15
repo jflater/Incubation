@@ -1,0 +1,48 @@
+"0","inc_resp <- phy_tree(inc_resp)"
+"2","Found more than one class ""phylo"" in cache; using the first, from namespace 'phyloseq'
+"
+"2","Also defined by ‘tidytree’
+"
+"2","Found more than one class ""phylo"" in cache; using the first, from namespace 'phyloseq'
+"
+"2","Also defined by ‘tidytree’
+"
+"2","Found more than one class ""phylo"" in cache; using the first, from namespace 'phyloseq'
+"
+"2","Also defined by ‘tidytree’
+"
+"2","Found more than one class ""phylo"" in cache; using the first, from namespace 'phyloseq'
+"
+"2","Also defined by ‘tidytree’
+"
+"2","Found more than one class ""phylo"" in cache; using the first, from namespace 'phyloseq'
+"
+"2","Also defined by ‘tidytree’
+"
+"2","Found more than one class ""phylo"" in cache; using the first, from namespace 'phyloseq'
+"
+"2","Also defined by ‘tidytree’
+"
+"0","inc_resp"
+"1","
+Phylogenetic tree with 441 tips and 440 internal nodes.
+
+"
+"1","Tip labels:
+"
+"1","	Otu02124, Otu00889, Otu00262, Otu00009, Otu03437, Otu02645, ...
+"
+"1","Node labels:
+"
+"1","	0.948, 0.906, 0.989, 0.782, 0.723, 0.897, ...
+"
+"1","
+"
+"1",""
+"1","Rooted"
+"1",""
+"1","; "
+"1","includes branch lengths."
+"1",""
+"1","
+"

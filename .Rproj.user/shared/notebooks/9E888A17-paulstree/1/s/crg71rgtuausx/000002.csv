@@ -1,0 +1,2 @@
+"0","df2 = dplyr::mutate(df, newlab = paste(label, Phylum, Genus, sep='|'))"
+"0","head(df2)"

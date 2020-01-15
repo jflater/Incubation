@@ -87,7 +87,8 @@ df <- resp_alf %>%
 ```
 
 ```{r, message=F, error=F, warning=F, echo=F}
-inc_resp <- prune_taxa(c(df$label), inc)
+inc_resp <- prune_taxa(c(df$label), inc) %>%
+  filter_taxa(function(x) sum(x) >= 1, T)
 ```
 
 ```{r, message=F, error=F, warning=F, echo=F}
@@ -99,15 +100,19 @@ df2 = dplyr::mutate(df, newlab = paste(label, Phylum, Genus, sep='|'))
 head(df2)
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
-resp_p <- ggtree(inc_resp) %<+% df2 +
-  geom_tiplab(aes(label=newlab), size=1, align=TRUE, linesize=.1) + 
-  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
-  theme_tree() 
-testttt <- ggtree(inc_resp) +
-  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
-  theme_tree()
-plot(testttt)
+ggtree(inc_resp, branch.length = "none")
 
+resp_p <- ggtree(inc_resp, branch.length = "none") %<+% df2 +
+  geom_tiplab(aes(label=Phylum), size=1, align=TRUE, linesize=.1) +
+  theme_tree() 
+
+resp_p
+
+#testttt <- ggtree(inc_resp) +
+#  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
+#  theme_tree()
+
+#testttt
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
 colnames(df2)
@@ -121,11 +126,12 @@ write.csv(df3, file ="../data/resp_table.csv")
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
 final_resp <- resp_p  %>% 
-  gheatmap(df3, offset=0.25, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "black") +
+  gheatmap(df3, offset=1, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "black") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
+
 plot(final_resp) + scale_fill_viridis(option = "plasma") + ggplot2::theme_dark() +
   guides(fill=guide_legend(title="Log fold change"))
-#plot(final_resp) + scale_color_viridis(discrete = T, option = "viridis") + ggplot2::theme_bw()
+
 png("../Figures/resp_tree.png", height = 20, width = 14, units = 'in', res = 600)
 plot(final_resp) + scale_fill_viridis(option = "plasma") + ggplot2::theme_dark() +
   guides(fill=guide_legend(title="Log fold change"))
