@@ -1,0 +1,10 @@
+"0","# We need a data frame with the relative abundance of the responding Phyla"
+"0","data <- rbind(meltalf, meltref) %>%"
+"0","  mutate(Responder = ifelse(OTU %in% early_alf_OTUS$OTU, ""Responding"", ""Not_responding"")) %>%"
+"0","  filter(Responder == ""Responding"") %>%"
+"0","  group_by(treatment, day, Phylum) %>%"
+"0","  mutate(phyla_sum = sum(Abundance)) %>%"
+"0","  select(treatment, day, Phylum, phyla_sum) %>%"
+"0","  distinct()"
+"2","Error in OTU %in% early_alf_OTUS$OTU : object 'early_alf_OTUS' not found
+"

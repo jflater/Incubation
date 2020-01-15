@@ -1,0 +1,21 @@
+name: Random Things
+output_dir: docs
+navbar:
+  title: 'WORLE Data Analysis'
+  left:
+  - text: Index
+    href: index.html
+  - text: Manure-associated
+    href: manure_associated.html  
+  - text: Diversity  
+    href: diversity.html 
+  - text: Ordinations
+    href: ordinations.html
+  - text: ARGs
+    href: args.html
+    
+output:
+  html_document:
+    theme: lumen
+    lib_dir: site_libs
+    self_contained: no

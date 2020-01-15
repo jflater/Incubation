@@ -1,0 +1,7 @@
+"0",""
+"0","ppp <- pp + "
+"0","  scale_x_continuous(breaks = c(0, 7, 14, 21, 35, 49, 97)) +"
+"0","  xlab(""Day"") +"
+"0","  ylab(""Relative abundance \n of responders (LFC > 2)"") +"
+"0","  ggtitle(""Early mix responders"") "
+"0","ppp"

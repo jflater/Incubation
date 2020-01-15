@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1579109584410.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3803501494",
+    "id" : "DE2BE5D6",
+    "lastKnownWriteTime" : 1579112913,
+    "last_content_update" : 1579112913302,
+    "path" : "~/Documents/Incubation/code/paulstree.Rmd",
+    "project_path" : "code/paulstree.Rmd",
+    "properties" : {
+        "cursorPosition" : "89,39",
+        "last_setup_crc32" : "FD5AEAB9ee00eb0e",
+        "marks" : "<:41,16\n>:41,16",
+        "scrollLine" : "72"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

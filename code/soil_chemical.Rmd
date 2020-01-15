@@ -1,0 +1,31 @@
+---
+title: "Incubation soil chemical data"
+author: "Jared"
+date: "12/4/2019"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(phyloseq)
+library(DESeq2)
+```
+
+# Characteristics of the starting soil    
+Soil for the incubation was collected from organic alfalfa plots, surface cores were collected from all plots and composited into a bulk soil sample. Bulk soil was sieved to 2mm and allowed to air-dry before microcosm construction. 
+
+```{r, meta data}
+data <- readRDS("data/RDS/incubation_physeq_Aug18.RDS")
+meta_data <- data.frame(sample_data(data))
+```
+
+The characteristics of the starting soil are as follows:
+```{r}
+meta_data %>%
+  filter(treatment %in% c("AlfalfaSoil", "AlfalfaAmend","CompostAmend")) %>%
+  mutate(Inorganic_N = NO3 + NH3) %>%
+  ggplot(aes(x = treatment, y = Inorganic_N)) +
+    geom_bar(stat = "identity") +
+    scale_x_discrete(limits=c("AlfalfaAmend","CompostAmend", "AlfalfaSoil"))
+```
+

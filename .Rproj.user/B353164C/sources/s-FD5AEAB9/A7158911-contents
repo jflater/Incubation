@@ -1,0 +1,24 @@
+---
+title: "WORLE data analysis"
+author: "Jared Flater, Laura Alt"
+date: "9/20/2019"
+output:
+  html_document:
+    df_print: paged
+    fig_width: 8.5
+    fig_height: 11
+    fig_caption: true
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data analysis from the 2017 WORLE rainfall simulation   
+
+<img src="./images/20171026_090427.jpg" alt="Rainfall simulator" />
+

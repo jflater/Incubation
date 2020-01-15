@@ -1,0 +1,153 @@
+---
+title: "Phylogenetic tree of responding OTUs"
+author: "Jared Flater"
+date: "1/15/2020"
+output:
+  html_document:
+    df_print: paged
+    fig_width: 8.5
+    fig_height: 11
+    fig_caption: true
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hidea
+---
+```{r setup}
+knitr::opts_knit$set(root.dir = normalizePath("."))
+```
+
+```{r, echo = F, message = F, warning = F}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("ggtree")
+BiocManager::install("phyloseq")
+BiocManager::install("treeio")
+
+library(reshape2)
+library(tidyverse)
+library(phyloseq)
+library(ggtree)
+library(treeio)
+library(viridis)
+library(phylosmith)
+library(kableExtra)
+library(vegan)
+```
+# Introduction
+We would like to visualize the phylogenetic relationship among the amendment responders. We do this by sub setting our data to those OTUs with a LFC of __ in the early and late groups of each treatment. 
+
+* A tree file is necessary for this
+```{r, message=F, error=F, warning=F, echo=F}
+# We have a tree for this data
+tree <- read.tree("../data/tree.nwk")
+# phyloseq object
+inc.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
+# Combine the two
+inc <- merge_phyloseq(inc.physeq, tree)
+# Subset to desired samples
+inc <- subset_samples(inc, day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 1, T) 
+
+inc10 <- inc %>%
+  filter_taxa(function(x) sum(x) >= 10, T)
+#Below lines for posterity, I forget how to drop taxa sometimes
+#no.unclass <- subset_taxa(inc, !Phylum=="Bacteria_unclassified")
+#no.unclass <- subset_taxa(no.unclass, !Genus=="Gp6_unclassified")
+
+# What depth? Should do a rarefaction curve? 
+#inc_rare <- rarefy_even_depth(physeq = no.unclass, sample.size = 6000, rngseed = 3242343, verbose = F)
+
+rm(tree, inc.physeq, no.unclass)
+```
+```{r}
+inc
+inc10
+```
+2/3s of taxa are observed less than 10 times in the incubated samples...is this meaningful? 
+
+# Tree     
+
+This tree is showing comparisons between amendment and reference, the previous example showed differences between amendment and reference plus amendment from the previous time point. This should be a more accurate representation of OTUs responding to the amendment for each 
+
+```{r, message=F, error=F, warning=F, echo=F}
+# RDS saved from 
+resp_alf <- readRDS("../data/LFC_alf_OTUs.RDS") %>% dplyr::rename(label = OTU)
+resp_comp <- readRDS("../data/LFC_comp_OTUs.RDS") %>% dplyr::rename(label = OTU)
+resp_mix <- readRDS("../data/LFC_mix_OTUs.RDS") %>% dplyr::rename(label = OTU)
+
+resp <- rbind(resp_alf[1], resp_comp[1], resp_mix[1])
+
+dist_all_resp <- distinct(resp)
+
+df <- resp_alf %>%
+  full_join(resp_comp) %>%
+  full_join(resp_mix)
+```
+
+```{r, message=F, error=F, warning=F, echo=F}
+inc_resp <- prune_taxa(c(df$label), inc)
+```
+
+```{r, message=F, error=F, warning=F, echo=F}
+inc_resp <- phy_tree(inc_resp)
+inc_resp
+```
+```{r, message=F, error=F, warning=F, echo=F}
+df2 = dplyr::mutate(df, newlab = paste(label, Phylum, Genus, sep='|'))
+head(df2)
+```
+```{r, message=F, error=F, warning=F, echo=F}
+resp_p <- ggtree(inc_resp) %<+% df2 +
+  geom_tiplab(aes(label=newlab), size=1, align=TRUE, linesize=.1) + 
+  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
+  theme_tree() 
+testttt <- ggtree(inc_resp) +
+  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
+  theme_tree()
+plot(testttt)
+
+```
+```{r, message=F, error=F, warning=F, echo=F}
+colnames(df2)
+head(df2$label)
+
+df3 <- df2 %>%
+  select(label, Alfalfa_early_log2FoldChange, Mix_early_log2FoldChange, Compost_early_log2FoldChange, Alfalfa_late_log2FoldChange, Mix_late_log2FoldChange, Compost_late_log2FoldChange) %>%
+  column_to_rownames(var = "label")
+
+write.csv(df3, file ="../data/resp_table.csv")
+```
+```{r, message=F, error=F, warning=F, echo=F}
+final_resp <- resp_p  %>% 
+  gheatmap(df3, offset=0.25, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "black") +
+  ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
+plot(final_resp) + scale_fill_viridis(option = "plasma") + ggplot2::theme_dark() +
+  guides(fill=guide_legend(title="Log fold change"))
+#plot(final_resp) + scale_color_viridis(discrete = T, option = "viridis") + ggplot2::theme_bw()
+png("../Figures/resp_tree.png", height = 20, width = 14, units = 'in', res = 600)
+plot(final_resp) + scale_fill_viridis(option = "plasma") + ggplot2::theme_dark() +
+  guides(fill=guide_legend(title="Log fold change"))
+dev.off()
+```
+
+## Table of Otus    
+All Otus with LFC greater than 3 in all treatment response groups
+```{r, message=F, error=F, warning=F, echo=F}
+# Common responders in all amendments and response groups
+new_DF <- df3[rowSums(is.na(df3)) == 0,]
+kable(new_DF) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%", height = "400px")
+```
+
+```{r}
+p3 <- ggtree(inc_resp, aes(color=branch.length)) +
+  geom_tiplab(size=2, color="plum1") +
+  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
+  scale_color_continuous(low='white', high='hotpink', name="Branch length (my)") +
+  theme(legend.position="bottom")
+plot(p3)
+```
+
