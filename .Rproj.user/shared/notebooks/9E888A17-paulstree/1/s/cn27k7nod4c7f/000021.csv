@@ -1,6 +1,0 @@
-"0",""
-"0","resp_p <- ggtree(inc_resp, branch.length = ""none"") %<+% df2 +"
-"0","  geom_tiplab(aes(label=Phylum), size=1, align=TRUE, linesize=.1) +"
-"0","  theme_tree() "
-"0",""
-"0","resp_p"

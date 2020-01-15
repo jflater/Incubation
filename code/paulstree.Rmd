@@ -96,14 +96,14 @@ inc_resp <- phy_tree(inc_resp)
 inc_resp
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
-df2 = dplyr::mutate(df, newlab = paste(label, Phylum, Genus, sep='|'))
+df2 = dplyr::mutate(df, newlab = paste(label, Genus, sep='|'))
 head(df2)
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
-ggtree(inc_resp, branch.length = "none")
+ggtree(inc_resp, branch.length = "none") 
 
-resp_p <- ggtree(inc_resp, branch.length = "none") %<+% df2 +
-  geom_tiplab(aes(label=Phylum), size=1, align=TRUE, linesize=.1) +
+resp_p <- ggtree(inc_resp, branch.length = "none", aes(color=Phylum)) %<+% df2 +
+  geom_tiplab(aes(label=newlab), size=1, align=TRUE, linesize=.1) +
   theme_tree() 
 
 resp_p
@@ -126,14 +126,14 @@ write.csv(df3, file ="../data/resp_table.csv")
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
 final_resp <- resp_p  %>% 
-  gheatmap(df3, offset=1, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "black") +
+  gheatmap(df3, offset=1, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
 
-plot(final_resp) + scale_fill_viridis(option = "plasma") + ggplot2::theme_dark() +
+plot(final_resp) + scale_fill_viridis(option = "plasma") +
   guides(fill=guide_legend(title="Log fold change"))
 
 png("../Figures/resp_tree.png", height = 20, width = 14, units = 'in', res = 600)
-plot(final_resp) + scale_fill_viridis(option = "plasma") + ggplot2::theme_dark() +
+plot(final_resp) + scale_fill_viridis(option = "plasma") +
   guides(fill=guide_legend(title="Log fold change"))
 dev.off()
 ```

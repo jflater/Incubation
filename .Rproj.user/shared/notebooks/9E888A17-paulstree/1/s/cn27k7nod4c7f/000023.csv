@@ -1,6 +1,0 @@
-"0",""
-"0","#testttt <- ggtree(inc_resp) +"
-"0","#  geom_label2(aes(subset=!isTip, label=node), size=2, color=""darkred"", alpha=0.5) +"
-"0","#  theme_tree()"
-"0",""
-"0","#testttt"
