@@ -1,6 +1,0 @@
-"0","meta_data %>%"
-"0","  filter(treatment %in% c(""AlfalfaSoil"", ""AlfalfaAmend"",""CompostAmend"")) %>%"
-"0","  mutate(Inorganic_N = NO3 + NH3) %>%"
-"0","  ggplot(aes(x = treatment, y = Inorganic_N)) +"
-"0","    geom_bar(stat = ""identity"") +"
-"0","    scale_x_discrete(limits=c(""AlfalfaAmend"",""CompostAmend"", ""AlfalfaSoil""))"

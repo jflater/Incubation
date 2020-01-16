@@ -1,3 +1,0 @@
-"0","early_mix_OTUs <- readRDS(""../data/LFC>2_early_mix_OTUs.RDS"")"
-"0","late_mix_OTUs <- readRDS(""../data/LFC>2_late_mix_OTUs.RDS"")"
-"0","all_mix <- readRDS(""../data/LFC_mix_OTUs.RDS"")"

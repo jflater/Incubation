@@ -1,2 +1,0 @@
-"0","# Save this list of mixmixa LFC > 2 for more plots"
-"0","saveRDS(all_mix, file = ""../data/LFC_mix_OTUs.RDS"")"

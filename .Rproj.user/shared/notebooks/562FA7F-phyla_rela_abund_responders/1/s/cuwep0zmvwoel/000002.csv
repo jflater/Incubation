@@ -1,3 +1,0 @@
-"0","early_alf_OTUs <- readRDS(""../data/LFC>2_early_alf_OTUs.RDS"")"
-"0","late_alf_OTUs <- readRDS(""../data/LFC>2_late_alf_OTUs.RDS"")"
-"0","all_alf <- readRDS(""../data/LFC_alf_OTUs.RDS"")"

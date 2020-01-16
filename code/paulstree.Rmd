@@ -126,7 +126,7 @@ write.csv(df3, file ="../data/resp_table.csv")
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
 final_resp <- resp_p  %>% 
-  gheatmap(df3, offset=1, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
+  gheatmap(df3, offset=2.6, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
 
 plot(final_resp) + scale_fill_viridis(option = "plasma") +

@@ -1,2 +1,0 @@
-"0","inc_resp <- prune_taxa(c(df$label), inc) %>%"
-"0","  filter_taxa(function(x) sum(x) >= 1, T)"

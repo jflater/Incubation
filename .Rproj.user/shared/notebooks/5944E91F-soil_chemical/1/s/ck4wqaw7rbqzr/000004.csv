@@ -1,2 +1,0 @@
-"0","data <- readRDS(""data/RDS/incubation_physeq_Aug18.RDS"")"
-"0","meta_data <- data.frame(sample_data(data))"

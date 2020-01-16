@@ -1,6 +1,0 @@
-"0","final_resp <- resp_p  %>% "
-"0","  gheatmap(df3, offset=1, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = ""white"") +"
-"0","  ggtitle(""Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference"")"
-"0",""
-"0","plot(final_resp) + scale_fill_viridis(option = ""plasma"") +"
-"0","  guides(fill=guide_legend(title=""Log fold change""))"

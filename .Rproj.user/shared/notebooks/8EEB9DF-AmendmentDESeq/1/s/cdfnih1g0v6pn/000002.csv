@@ -1,6 +1,0 @@
-"0","OTUs <- all_mix %>%"
-"0","  filter(Mix_early_log2FoldChange>4 & Mix_late_log2FoldChange>4)"
-"0",""
-"0","kable(OTUs) %>%"
-"0","  kable_styling(bootstrap_options = ""striped"") %>%"
-"0","  scroll_box(width = ""100%"", height = ""400px"")"
