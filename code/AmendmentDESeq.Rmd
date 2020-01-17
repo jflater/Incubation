@@ -15,12 +15,12 @@ output:
 knitr::opts_knit$set(root.dir = normalizePath("."))
 ```
 
-```{r, cache=TRUE}
+#```{r, cache=TRUE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 BiocManager::install(c("phyloseq", "DESeq2"))
-```
+#```
 
 ```{r, echo = F, message = F, warning = F, cache=TRUE}
 # Load libraries
@@ -90,21 +90,21 @@ log.plot.late.alf + scale_colour_viridis_d(option = "plasma") +
 ```
 
 ```{r, message = F, warning = F}
-# Common to both early and late with LFC >=2
+# Common to both early and late with LFC >=4
 otustokeep <- intersect(log.plot.early.alf.data$OTU, log.plot.late.alf.data$OTU)
 
 # Trim and rename variables
 early_alf_OTUS <- log.plot.early.alf.data %>%
-  filter(log2FoldChange >= 2) %>%
+  filter(log2FoldChange >= 4) %>%
   select(OTU, Phylum, Class, Order, Family, Genus, Alfalfa_early_log2FoldChange = log2FoldChange) 
 
-saveRDS(early_alf_OTUS, file = "../data/LFC>2_early_alf_OTUs.RDS")
+saveRDS(early_alf_OTUS, file = "../data/LFC>4_early_alf_OTUs.RDS")
 
 late_alf_OTUS <- log.plot.late.alf.data %>%
-  filter(log2FoldChange >= 2) %>%
+  filter(log2FoldChange >= 4) %>%
   select(OTU, Phylum, Class, Order, Family, Genus, Alfalfa_late_log2FoldChange = log2FoldChange)
 
-saveRDS(late_alf_OTUS, file = "../data/LFC>2_late_alf_OTUs.RDS")
+saveRDS(late_alf_OTUS, file = "../data/LFC>4_late_alf_OTUs.RDS")
 
 # join early and late
 all_alf <- full_join(early_alf_OTUS, late_alf_OTUS)
@@ -221,21 +221,21 @@ log.plot.late.comp + scale_colour_viridis_d(option = "plasma") +
 ```
 
 ```{r, message = F, warning = F}
-# Common to both early and late with LFC >=2
+# Common to both early and late with LFC >=4
 otustokeep <- intersect(log.plot.early.comp.data$OTU, log.plot.late.comp.data$OTU)
 
 # Trim and rename variables
 early_comp_OTUS <- log.plot.early.comp.data %>% 
-  filter(log2FoldChange >= 2) %>%
+  filter(log2FoldChange >= 4) %>%
   select(OTU, Phylum, Class, Order, Family, Genus, Compost_early_log2FoldChange = log2FoldChange) 
 
-saveRDS(early_comp_OTUS, file = "../data/LFC>2_early_comp_OTUs.RDS")
+saveRDS(early_comp_OTUS, file = "../data/LFC>4_early_comp_OTUs.RDS")
 
 late_comp_OTUS <- log.plot.late.comp.data %>%
-  filter(log2FoldChange >= 2) %>%
+  filter(log2FoldChange >= 4) %>%
   select(OTU, Phylum, Class, Order, Family, Genus, Compost_late_log2FoldChange = log2FoldChange)
 
-saveRDS(late_comp_OTUS, file = "../data/LFC>2_late_comp_OTUs.RDS")
+saveRDS(late_comp_OTUS, file = "../data/LFC>4_late_comp_OTUs.RDS")
 
 # join early and late
 all_comp <- full_join(early_comp_OTUS, late_comp_OTUS)
@@ -321,20 +321,20 @@ log.plot.late.mix + scale_colour_viridis_d(option = "plasma") +
 ```
 
 ```{r, message = F, warning = F}
-# Common to both early and late with LFC >=2
+# Common to both early and late with LFC >=4
 otustokeep <- intersect(log.plot.early.mix.data$OTU, log.plot.late.mix.data$OTU)
 
 early_mix_OTUS <- log.plot.early.mix.data %>% 
-  filter(log2FoldChange >= 2) %>%
+  filter(log2FoldChange >= 4) %>%
   select(OTU, Phylum, Class, Order, Family, Genus, Mix_early_log2FoldChange = log2FoldChange) 
 
-saveRDS(early_mix_OTUS, file = "../data/LFC>2_early_mix_OTUs.RDS")
+saveRDS(early_mix_OTUS, file = "../data/LFC>4_early_mix_OTUs.RDS")
 
 late_mix_OTUS <- log.plot.late.mix.data %>%
-  filter(log2FoldChange >= 2) %>%
+  filter(log2FoldChange >= 4) %>%
   select(OTU, Phylum, Class, Order, Family, Genus, Mix_late_log2FoldChange = log2FoldChange)
 
-saveRDS(late_mix_OTUS, file = "../data/LFC>2_late_mix_OTUs.RDS")
+saveRDS(late_mix_OTUS, file = "../data/LFC>4_late_mix_OTUs.RDS")
 # join early and late
 all_mix <- full_join(early_mix_OTUS, late_mix_OTUS)
 ```

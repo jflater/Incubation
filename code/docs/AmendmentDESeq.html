@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Plotting of OTUs responding to amendment in the Incubation Project</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 54px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h2 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h3 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h4 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h5 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h6 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">WORLE Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Index</a>
+</li>
+<li>
+  <a href="manure_associated.html">Manure-associated</a>
+</li>
+<li>
+  <a href="diversity.html">Diversity</a>
+</li>
+<li>
+  <a href="ordinations.html">Ordinations</a>
+</li>
+<li>
+  <a href="args.html">ARGs</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Plotting of OTUs responding to amendment in the Incubation Project</h1>
+
+</div>
+
+
+<pre class="r"><code>knitr::opts_knit$set(root.dir = normalizePath(&quot;.&quot;))</code></pre>
+<p>#```{r, cache=TRUE} if (!requireNamespace(“BiocManager”, quietly = TRUE)) install.packages(“BiocManager”)</p>
+<p>BiocManager::install(c(“phyloseq”, “DESeq2”)) #```</p>
+<pre class="r"><code>inc.physeq &lt;- readRDS(&quot;../data/not.rare.nounclass&quot;)
+source(&quot;../code/functions.R&quot;)</code></pre>
+<div id="alfalfa-responders" class="section level1">
+<h1>Alfalfa Responders</h1>
+<div id="early" class="section level2">
+<h2>Early</h2>
+<p>The early response group in alfalfa samples compared to reference.</p>
+<pre class="r"><code>## Subset to early response  
+alf.early &lt;- subset_samples(inc.physeq, Treatment_Response %in% c(&quot;Alfalfa_early&quot;, &quot;Reference_early&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 3, T) 
+
+# Be very careful of the design formula in the who_diff_day() function
+# This function also selects only LFC &gt;= 2 and alpha 0.01 for significant and increasing otus to be returned
+log.plot.early.alf &lt;- alf.early %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
+  who_diff_day(&quot;Alfalfa_early&quot;, &quot;Reference_early&quot;, alf.early) %&gt;%
+  log_plot(&quot;Alfalfa OTUS in early group that are significantly changing compared to reference early&quot;)
+
+# Add colum to data indicating treatment
+log.plot.early.alf.data &lt;- log.plot.early.alf$data %&gt;%
+  mutate(trt = c(&quot;Alfalfa_early&quot;))
+
+# print plot with viridis color 
+log.plot.early.alf + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-3-1.png" width="816" /></p>
+</div>
+<div id="late" class="section level2">
+<h2>Late</h2>
+<pre class="r"><code>## Late 
+alf.late &lt;- subset_samples(inc.physeq, Treatment_Response %in% c(&quot;Alfalfa_late&quot;, &quot;Reference_late&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 3, T)
+
+# Make deseq and plot as above
+log.plot.late.alf &lt;- alf.late %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
+  who_diff_day(&quot;Alfalfa_late&quot;, &quot;Reference_late&quot;, alf.late) %&gt;%
+  log_plot(&quot;Alfalfa OTUS in late group that are significantly changing compared to reference late&quot;)
+
+# Add colum to data indicating treatment
+log.plot.late.alf.data &lt;- log.plot.late.alf$data %&gt;%
+  mutate(trt = c(&quot;Alfalfa_late&quot;))
+
+# print plot with viridis color 
+log.plot.late.alf + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-4-1.png" width="816" /></p>
+<pre class="r"><code># Common to both early and late with LFC &gt;=4
+otustokeep &lt;- intersect(log.plot.early.alf.data$OTU, log.plot.late.alf.data$OTU)
+
+# Trim and rename variables
+early_alf_OTUS &lt;- log.plot.early.alf.data %&gt;%
+  filter(log2FoldChange &gt;= 4) %&gt;%
+  select(OTU, Phylum, Class, Order, Family, Genus, Alfalfa_early_log2FoldChange = log2FoldChange) 
+
+saveRDS(early_alf_OTUS, file = &quot;../data/LFC&gt;4_early_alf_OTUs.RDS&quot;)
+
+late_alf_OTUS &lt;- log.plot.late.alf.data %&gt;%
+  filter(log2FoldChange &gt;= 4) %&gt;%
+  select(OTU, Phylum, Class, Order, Family, Genus, Alfalfa_late_log2FoldChange = log2FoldChange)
+
+saveRDS(late_alf_OTUS, file = &quot;../data/LFC&gt;4_late_alf_OTUs.RDS&quot;)
+
+# join early and late
+all_alf &lt;- full_join(early_alf_OTUS, late_alf_OTUS)</code></pre>
+</div>
+<div id="plot-alfalfa-otus-with-lfc-4-in-both-early-and-late" class="section level2">
+<h2>Plot Alfalfa OTUs with LFC &gt;= 4 in both early and late</h2>
+<p>This plot is showing the common OTUs with LFC &gt; 4 while also showing the LFC of OTUs observed in only early or late, represented by the points landing below 4 on either axis. Common OTUs with LFC &lt; 4 are left unlabeled.</p>
+<pre class="r"><code>p &lt;- ggplot(all_alf,
+       aes(x = Alfalfa_early_log2FoldChange, 
+           y = Alfalfa_late_log2FoldChange,
+           color = Phylum,
+           label = OTU)) +
+  geom_miss_point() +
+  geom_text_repel(aes(label=ifelse(Alfalfa_early_log2FoldChange&gt;4 &amp; Alfalfa_late_log2FoldChange&gt;4,as.character(OTU),&#39;&#39;)),hjust=1,vjust=1) +
+  theme(legend.position = &quot;none&quot;)
+
+p + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-6-1.png" width="100%" /></p>
+<pre class="r"><code># Save this list of alfalfa LFC &gt; 2 for more plots
+# Use all_alf
+saveRDS(all_alf, file = &quot;../data/LFC_alf_OTUs.RDS&quot;)
+
+png(&quot;../Figures/early_late_alf_responders.png&quot;,height=5,width=8,units=&#39;in&#39;,res=300)
+p + scale_colour_viridis_d(option = &quot;viridis&quot;) +
+  theme_bw() +
+  theme(legend.position = &quot;none&quot;)
+dev.off()</code></pre>
+<pre><code>## png 
+##   2</code></pre>
+</div>
+<div id="plot-a-table-of-the-alfalfa-otus-with-taxonomy" class="section level2">
+<h2>Plot a table of the Alfalfa OTUs with taxonomy</h2>
+<p>These OTUs had response greater than 2 in both early and late alfalfa</p>
+<pre class="r"><code>OTUs &lt;- all_alf %&gt;%
+  filter(Alfalfa_early_log2FoldChange &gt; 2 &amp; Alfalfa_late_log2FoldChange &gt; 2)
+write.table(OTUs, file = &quot;../Figures/alf_responders.txt&quot;, sep = &quot;,&quot;, quote = F, row.names = F)
+table &lt;- kable(OTUs) %&gt;%
+  kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)</code></pre>
+<div id="two-otus-in-the-top-10-of-alfalfa-responders-were-from-the-genus-pseudomonas" class="section level3">
+<h3>Two Otus in the top 10 of alfalfa responders were from the Genus Pseudomonas</h3>
+<p>BLASTn results for these two Otu00064 and Otu00494 were most similar to sequences from Pseudomonas fulva and Pseudomonas putida, both members of the Pseudomonas putida group</p>
+</div>
+<div id="plot-counts-of-interesting-otu00064-and-otu00494-early" class="section level3">
+<h3>Plot counts of interesting Otu00064 and Otu00494 early</h3>
+<pre class="r"><code>early &lt;- alf.early %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) 
+late &lt;- alf.late %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;)
+plotCounts(early, gene = c(&quot;Otu00064&quot;), intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-8-1.png" width="816" /></p>
+<pre class="r"><code>plotCounts(early, gene = c(&quot;Otu00494&quot;), intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-8-2.png" width="816" /></p>
+<pre class="r"><code>#Use above line to check if an OTU is increasing or decreasing depending on order of contrast, replace with OTU of interest, run the phyloseq to desey in #other areas to check compost or mix. </code></pre>
+</div>
+<div id="plot-counts-of-interesting-otu00064-and-otu00494-late" class="section level3">
+<h3>Plot counts of interesting Otu00064 and Otu00494 late</h3>
+<pre class="r"><code>plotCounts(late, gene = &quot;Otu00064&quot;, intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-9-1.png" width="816" /></p>
+<pre class="r"><code>plotCounts(late, gene = &quot;Otu00494&quot;, intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-9-2.png" width="816" /></p>
+</div>
+</div>
+</div>
+<div id="compost-responders" class="section level1">
+<h1>Compost Responders</h1>
+<div id="early-1" class="section level2">
+<h2>Early</h2>
+<pre class="r"><code>## Early   
+comp.early &lt;- subset_samples(inc.physeq, Treatment_Response %in% c(&quot;Compost_early&quot;, &quot;Reference_early&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 3, T) 
+
+# Be very careful of the design formula in the who_diff_day() function
+# This function also selects only LFC &gt;= 2 and alpha 0.01 for significant and increasing otus to be returned
+log.plot.early.comp &lt;- comp.early %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
+  who_diff_day(&quot;Compost_early&quot;, &quot;Reference_early&quot;, comp.early) %&gt;%
+  log_plot(&quot;Compost OTUS in early group that are significantly changing compared to reference early&quot;)
+
+# Save a data frame of these results
+log.plot.early.comp.data &lt;- log.plot.early.comp$data %&gt;%
+  mutate(trt = c(&quot;Compost_early&quot;))
+
+# print plot with viridis color 
+log.plot.early.comp + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-10-1.png" width="816" /></p>
+</div>
+<div id="late-1" class="section level2">
+<h2>Late</h2>
+<pre class="r"><code>## Late 
+comp.late &lt;- subset_samples(inc.physeq, Treatment_Response %in% c(&quot;Compost_late&quot;, &quot;Reference_late&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 3, T)
+
+# Make deseq and plot as above
+log.plot.late.comp &lt;- comp.late %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
+  who_diff_day(&quot;Compost_late&quot;, &quot;Reference_late&quot;, comp.late) %&gt;%
+  log_plot(&quot;Compost OTUS in late group that are significantly changing compared to reference late&quot;)
+
+# Save a data frame of these results
+log.plot.late.comp.data &lt;- log.plot.late.comp$data %&gt;%
+  mutate(trt = c(&quot;Compost_late&quot;))
+
+# print plot with viridis color 
+log.plot.late.comp + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-11-1.png" width="816" /></p>
+<pre class="r"><code># Common to both early and late with LFC &gt;=4
+otustokeep &lt;- intersect(log.plot.early.comp.data$OTU, log.plot.late.comp.data$OTU)
+
+# Trim and rename variables
+early_comp_OTUS &lt;- log.plot.early.comp.data %&gt;% 
+  filter(log2FoldChange &gt;= 4) %&gt;%
+  select(OTU, Phylum, Class, Order, Family, Genus, Compost_early_log2FoldChange = log2FoldChange) 
+
+saveRDS(early_comp_OTUS, file = &quot;../data/LFC&gt;4_early_comp_OTUs.RDS&quot;)
+
+late_comp_OTUS &lt;- log.plot.late.comp.data %&gt;%
+  filter(log2FoldChange &gt;= 4) %&gt;%
+  select(OTU, Phylum, Class, Order, Family, Genus, Compost_late_log2FoldChange = log2FoldChange)
+
+saveRDS(late_comp_OTUS, file = &quot;../data/LFC&gt;4_late_comp_OTUs.RDS&quot;)
+
+# join early and late
+all_comp &lt;- full_join(early_comp_OTUS, late_comp_OTUS)</code></pre>
+</div>
+<div id="plot-compost-otus-with-lfc-4-in-both-early-and-late" class="section level2">
+<h2>Plot Compost OTUs with LFC &gt;= 4 in both early and late</h2>
+<p>This plot is showing the common OTUs with LFC &gt; 4 while also showing the LFC of OTUs observed in only early or late, represented by the points landing below 4 on either axis. Common OTUs with LFC &lt; 4 are left unlabeled.</p>
+<pre class="r"><code>p &lt;- ggplot(all_comp,
+       aes(x = Compost_early_log2FoldChange, 
+           y = Compost_late_log2FoldChange,
+           color = Phylum,
+           label = OTU)) +
+  geom_miss_point() +
+  geom_text_repel(aes(label=ifelse(Compost_early_log2FoldChange&gt;4 &amp; Compost_late_log2FoldChange&gt;4,as.character(OTU),&#39;&#39;)),hjust=0,vjust=0) 
+
+p + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-13-1.png" width="100%" /></p>
+<pre class="r"><code># Save this list of compcompa LFC &gt; 2 for more plots
+saveRDS(all_comp, file = &quot;../data/LFC_comp_OTUs.RDS&quot;)</code></pre>
+</div>
+<div id="plot-a-table-of-the-compost-otus-with-taxonomy" class="section level2">
+<h2>Plot a table of the Compost OTUs with taxonomy</h2>
+<p>These OTUs had response greater than 4 in both early and late compost</p>
+<pre class="r"><code>OTUs &lt;- all_comp %&gt;%
+  filter(Compost_early_log2FoldChange&gt;4 &amp; Compost_late_log2FoldChange&gt;4)
+
+kable(OTUs) %&gt;%
+  kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)</code></pre>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+OTU
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Phylum
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Class
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Order
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Family
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Genus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Compost_early_log2FoldChange
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Compost_late_log2FoldChange
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Otu00022
+</td>
+<td style="text-align:left;">
+Chloroflexi
+</td>
+<td style="text-align:left;">
+Thermomicrobia
+</td>
+<td style="text-align:left;">
+Sphaerobacterales
+</td>
+<td style="text-align:left;">
+Sphaerobacteraceae
+</td>
+<td style="text-align:left;">
+Sphaerobacter
+</td>
+<td style="text-align:right;">
+7.333830
+</td>
+<td style="text-align:right;">
+6.397724
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00103
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:right;">
+5.133128
+</td>
+<td style="text-align:right;">
+6.224653
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00130
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+<td style="text-align:left;">
+Actinomycetales
+</td>
+<td style="text-align:left;">
+Nocardiopsaceae
+</td>
+<td style="text-align:left;">
+Thermobifida
+</td>
+<td style="text-align:right;">
+6.563901
+</td>
+<td style="text-align:right;">
+5.247507
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00139
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Deltaproteobacteria
+</td>
+<td style="text-align:left;">
+Myxococcales
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:right;">
+6.125951
+</td>
+<td style="text-align:right;">
+5.054827
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00277
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Deltaproteobacteria
+</td>
+<td style="text-align:left;">
+Myxococcales
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:right;">
+4.564746
+</td>
+<td style="text-align:right;">
+4.587303
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00281
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria_unclassified
+</td>
+<td style="text-align:right;">
+4.718963
+</td>
+<td style="text-align:right;">
+4.305848
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00331
+</td>
+<td style="text-align:left;">
+Verrucomicrobia
+</td>
+<td style="text-align:left;">
+Opitutae
+</td>
+<td style="text-align:left;">
+Opitutales
+</td>
+<td style="text-align:left;">
+Opitutaceae
+</td>
+<td style="text-align:left;">
+Opitutaceae_unclassified
+</td>
+<td style="text-align:right;">
+4.244084
+</td>
+<td style="text-align:right;">
+4.339431
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00378
+</td>
+<td style="text-align:left;">
+Chloroflexi
+</td>
+<td style="text-align:left;">
+Chloroflexi_unclassified
+</td>
+<td style="text-align:left;">
+Chloroflexi_unclassified
+</td>
+<td style="text-align:left;">
+Chloroflexi_unclassified
+</td>
+<td style="text-align:left;">
+Chloroflexi_unclassified
+</td>
+<td style="text-align:right;">
+6.595953
+</td>
+<td style="text-align:right;">
+5.560310
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00395
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria
+</td>
+<td style="text-align:left;">
+Alteromonadales
+</td>
+<td style="text-align:left;">
+Alteromonadaceae
+</td>
+<td style="text-align:left;">
+Haliea
+</td>
+<td style="text-align:right;">
+4.690868
+</td>
+<td style="text-align:right;">
+4.920388
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00655
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Deltaproteobacteria
+</td>
+<td style="text-align:left;">
+Myxococcales
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:right;">
+6.766203
+</td>
+<td style="text-align:right;">
+5.657540
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00737
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Deltaproteobacteria
+</td>
+<td style="text-align:left;">
+Myxococcales
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:left;">
+Myxococcales_unclassified
+</td>
+<td style="text-align:right;">
+5.019151
+</td>
+<td style="text-align:right;">
+4.032267
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00847
+</td>
+<td style="text-align:left;">
+Planctomycetes
+</td>
+<td style="text-align:left;">
+Planctomycetia
+</td>
+<td style="text-align:left;">
+Planctomycetales
+</td>
+<td style="text-align:left;">
+Planctomycetaceae
+</td>
+<td style="text-align:left;">
+Planctomycetaceae_unclassified
+</td>
+<td style="text-align:right;">
+4.531744
+</td>
+<td style="text-align:right;">
+4.556528
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="mix-responders" class="section level1">
+<h1>Mix Responders</h1>
+<div id="early-2" class="section level2">
+<h2>Early</h2>
+<pre class="r"><code>## Early   
+mix.early &lt;- subset_samples(inc.physeq, Treatment_Response %in% c(&quot;Mix_early&quot;, &quot;Reference_early&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 3, T) 
+
+# Be very careful of the design formula in the who_diff_day() function
+# This function also selects only LFC &gt;= 2 and alpha 0.01 for significant and increasing otus to be returned
+log.plot.early.mix &lt;- mix.early %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
+  who_diff_day(&quot;Mix_early&quot;, &quot;Reference_early&quot;, mix.early) %&gt;%
+  log_plot(&quot;Mix OTUS in early group that are significantly changing mixared to reference early&quot;)
+
+# Save a data frame of these results
+log.plot.early.mix.data &lt;- log.plot.early.mix$data %&gt;%
+  mutate(trt = c(&quot;Mix_early&quot;))
+
+# print plot with viridis color 
+log.plot.early.mix + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-15-1.png" width="816" /></p>
+</div>
+<div id="late-2" class="section level2">
+<h2>Late</h2>
+<pre class="r"><code>## Late 
+mix.late &lt;- subset_samples(inc.physeq, Treatment_Response %in% c(&quot;Mix_late&quot;, &quot;Reference_late&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 3, T)
+
+# Make deseq and plot as above
+log.plot.late.mix &lt;- mix.late %&gt;%
+  phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
+  DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
+  who_diff_day(&quot;Mix_late&quot;, &quot;Reference_late&quot;, mix.late) %&gt;%
+  log_plot(&quot;Mix OTUS in late group that are significantly changing mixared to reference late&quot;)
+
+# Save a data frame of these results
+log.plot.late.mix.data &lt;- log.plot.late.mix$data %&gt;%
+  mutate(trt = c(&quot;Mix_late&quot;))
+
+# print plot with viridis color 
+log.plot.late.mix + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-16-1.png" width="816" /></p>
+<pre class="r"><code># Common to both early and late with LFC &gt;=4
+otustokeep &lt;- intersect(log.plot.early.mix.data$OTU, log.plot.late.mix.data$OTU)
+
+early_mix_OTUS &lt;- log.plot.early.mix.data %&gt;% 
+  filter(log2FoldChange &gt;= 4) %&gt;%
+  select(OTU, Phylum, Class, Order, Family, Genus, Mix_early_log2FoldChange = log2FoldChange) 
+
+saveRDS(early_mix_OTUS, file = &quot;../data/LFC&gt;4_early_mix_OTUs.RDS&quot;)
+
+late_mix_OTUS &lt;- log.plot.late.mix.data %&gt;%
+  filter(log2FoldChange &gt;= 4) %&gt;%
+  select(OTU, Phylum, Class, Order, Family, Genus, Mix_late_log2FoldChange = log2FoldChange)
+
+saveRDS(late_mix_OTUS, file = &quot;../data/LFC&gt;4_late_mix_OTUs.RDS&quot;)
+# join early and late
+all_mix &lt;- full_join(early_mix_OTUS, late_mix_OTUS)</code></pre>
+</div>
+<div id="plot-mix-otus-with-lfc-4-in-both-early-and-late" class="section level2">
+<h2>Plot Mix OTUs with LFC &gt;= 4 in both early and late</h2>
+<p>This plot is showing the common OTUs with LFC &gt; 4 while also showing the LFC of OTUs observed in only early or late, represented by the points landing below 4 on either axis. Common OTUs with LFC &lt; 4 are left unlabeled.</p>
+<pre class="r"><code>p &lt;- ggplot(all_mix,
+       aes(x = Mix_early_log2FoldChange, 
+           y = Mix_late_log2FoldChange,
+           color = Phylum,
+           label = OTU)) +
+  geom_miss_point() +
+  geom_text_repel(aes(label=ifelse(Mix_early_log2FoldChange&gt;4 &amp; Mix_late_log2FoldChange&gt;4,as.character(OTU),&#39;&#39;)),hjust=0,vjust=0) 
+p</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-18-1.png" width="100%" /></p>
+<pre class="r"><code>p + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_dark()</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-18-2.png" width="100%" /></p>
+<pre class="r"><code># Save this list of mixmixa LFC &gt; 2 for more plots
+saveRDS(all_mix, file = &quot;../data/LFC_mix_OTUs.RDS&quot;)</code></pre>
+</div>
+<div id="plot-a-table-of-the-mix-otus-with-taxonomy" class="section level2">
+<h2>Plot a table of the Mix OTUs with taxonomy</h2>
+<p>These OTUs had response greater than 4 in both early and late mix</p>
+<pre class="r"><code>OTUs &lt;- all_mix %&gt;%
+  filter(Mix_early_log2FoldChange&gt;4 &amp; Mix_late_log2FoldChange&gt;4)
+
+kable(OTUs) %&gt;%
+  kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)</code></pre>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+OTU
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Phylum
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Class
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Order
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Family
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Genus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Mix_early_log2FoldChange
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Mix_late_log2FoldChange
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Otu00022
+</td>
+<td style="text-align:left;">
+Chloroflexi
+</td>
+<td style="text-align:left;">
+Thermomicrobia
+</td>
+<td style="text-align:left;">
+Sphaerobacterales
+</td>
+<td style="text-align:left;">
+Sphaerobacteraceae
+</td>
+<td style="text-align:left;">
+Sphaerobacter
+</td>
+<td style="text-align:right;">
+5.603070
+</td>
+<td style="text-align:right;">
+4.400343
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00103
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:left;">
+Proteobacteria_unclassified
+</td>
+<td style="text-align:right;">
+4.425215
+</td>
+<td style="text-align:right;">
+4.625760
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00130
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+<td style="text-align:left;">
+Actinomycetales
+</td>
+<td style="text-align:left;">
+Nocardiopsaceae
+</td>
+<td style="text-align:left;">
+Thermobifida
+</td>
+<td style="text-align:right;">
+4.795846
+</td>
+<td style="text-align:right;">
+4.141254
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00808
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+<td style="text-align:left;">
+Bacilli
+</td>
+<td style="text-align:left;">
+Bacillales
+</td>
+<td style="text-align:left;">
+Paenibacillaceae_1
+</td>
+<td style="text-align:left;">
+Paenibacillus
+</td>
+<td style="text-align:right;">
+4.657377
+</td>
+<td style="text-align:right;">
+4.580972
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00847
+</td>
+<td style="text-align:left;">
+Planctomycetes
+</td>
+<td style="text-align:left;">
+Planctomycetia
+</td>
+<td style="text-align:left;">
+Planctomycetales
+</td>
+<td style="text-align:left;">
+Planctomycetaceae
+</td>
+<td style="text-align:left;">
+Planctomycetaceae_unclassified
+</td>
+<td style="text-align:right;">
+4.158366
+</td>
+<td style="text-align:right;">
+4.386717
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="plot-relative-abundance-of-otus-with-lfc-4" class="section level2">
+<h2>Plot relative abundance of OTUs with LFC &gt; 4</h2>
+<pre class="r"><code># We have lists of LFC OTUs, need to create a function that takes this and a target response group and returns the average relative abundance for these
+# input: list of OTUs, Treatment group
+resp_alf &lt;- readRDS(&quot;../data/LFC_alf_OTUs.RDS&quot;) %&gt;% dplyr::rename(label = OTU)
+OTUs &lt;- as.character(resp_alf$label)
+alf.rela.early &lt;- RelaOTUs(inc.physeq, c(&quot;Alfalfa_early&quot;), OTUs) %&gt;%
+  select(label = OTU, Alfalfa_early_meanRela = mean)
+alf.rela.late &lt;- RelaOTUs(inc.physeq, c(&quot;Alfalfa_late&quot;), OTUs) %&gt;%
+  select(label = OTU, meanAlfalfa_late_meanRela = mean)
+all_alf_rela &lt;- full_join(resp_alf, alf.rela.early) %&gt;%
+  full_join(alf.rela.late)</code></pre>
+<pre><code>## Joining, by = &quot;label&quot;Joining, by = &quot;label&quot;</code></pre>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

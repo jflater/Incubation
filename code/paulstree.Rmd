@@ -103,7 +103,7 @@ head(df2)
 ggtree(inc_resp, branch.length = "none") 
 
 resp_p <- ggtree(inc_resp, branch.length = "none", aes(color=Phylum)) %<+% df2 +
-  geom_tiplab(aes(label=newlab), size=1, align=TRUE, linesize=.1) +
+  geom_tiplab(aes(label=newlab), size=3, align=TRUE, linesize=.5) +
   theme_tree() 
 
 resp_p
@@ -119,20 +119,20 @@ colnames(df2)
 head(df2$label)
 
 df3 <- df2 %>%
-  select(label, Alfalfa_early_log2FoldChange, Mix_early_log2FoldChange, Compost_early_log2FoldChange, Alfalfa_late_log2FoldChange, Mix_late_log2FoldChange, Compost_late_log2FoldChange) %>%
+  select(label, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
   column_to_rownames(var = "label")
 
 write.csv(df3, file ="../data/resp_table.csv")
 ```
 ```{r, message=F, error=F, warning=F, echo=F}
 final_resp <- resp_p  %>% 
-  gheatmap(df3, offset=2.6, width=0.1, font.size = 1, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
+  gheatmap(df3, offset=13, width=0.5, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
 
 plot(final_resp) + scale_fill_viridis(option = "plasma") +
   guides(fill=guide_legend(title="Log fold change"))
 
-png("../Figures/resp_tree.png", height = 20, width = 14, units = 'in', res = 600)
+png("../Figures/resp_tree.png", height = 18, width = 10, units = 'in', res = 300)
 plot(final_resp) + scale_fill_viridis(option = "plasma") +
   guides(fill=guide_legend(title="Log fold change"))
 dev.off()
