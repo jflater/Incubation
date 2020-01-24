@@ -7,6 +7,8 @@ output: pdf_document
 
 ![Phylogenetic tree of OTUs with abundances that are 4 or more LFC greater than reference](resp_tree.png)
 \newpage   
+![Phylogenetic tree of OTUs with abundances that are 4 or more LFC greater than reference](resp_tree_final.png)
+\newpage   
 1. Common responding OTU  
 
 + Why might it be common? EPS from other bacteria?     
