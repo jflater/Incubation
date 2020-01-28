@@ -11,10 +11,10 @@ output:
     number_sections: false
     code_folding: hide
 ---
-```{r, messages = F, setup, cache=TRUE}
+```{r setup, messages = F, cache=TRUE}
 knitr::opts_knit$set(root.dir = normalizePath("."))
 ```
-```{r, messages = F,}
+```{r Loading libraries, messages = F, echo=FALSE}
 library(phyloseq)
 library(vegan)
 library(tidyverse)
@@ -22,7 +22,7 @@ library(viridis)
 library(kableExtra)
 ```
 # Relative abundance bar plots for the incubation inputs
-```{r, messages = F,}
+```{r Make phyloseq, messages = F, echo=FALSE}
 # Read in the phyloseq object, raw object from mothur, see code file mothur_to_phyloseq.R
 inc.raw.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
 
@@ -31,43 +31,41 @@ inc.inputs <- subset_samples(inc.raw.physeq, treatment %in% c("AlfalfaAmend",
                                                               "AlfalfaSoil",
                                                               "CompostAmend"))
 
-# Remove unclassified 
-# no.unclass <- subset_taxa(inc.inputs, !Phylum=="Bacteria_unclassified")
-# no.unclass <- subset_taxa(no.unclass, !Genus=="Gp6_unclassified")
-# tps = no.unclass
-
 # remove unused data
 rm(inc.raw.physeq)
 ```
-```{r, messages = F,}
+```{r min taxa, messages = F,}
 tps = inc.inputs
 #Let's check some of the of taxa counts from theses samples
 # Minimum sample size
 min(taxa_sums(otu_table(tps)))
 ```
-```{r, messages = F,}
+```{r filter taxa, messages = F, echo=FALSE}
 # Remove singletons and 0 counts
 tps <- filter_taxa(tps, function(x) sum(x) >= 2, T)
 min(taxa_sums(otu_table(tps)))
 rm(inc.inputs)
 ```
-```{r, messages = F,}
-sample_sums(tps)
-tps <- rarefy_even_depth(tps, rngseed = 423423423)
+```{r rarefy and ordinate, messages = F}
+tps <- rarefy_even_depth(tps, rngseed = 423423423) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+
 sample_sums(tps)
 
 physeq.dist <- ordinate(tps, "PCoA", "bray")
-p1 <- plot_ordination(tps, physeq.dist, type = "samples", color = "treatment")
+p1 <- plot_ordination(tps, physeq.dist, type = "samples", color = "treatment") +
+  geom_point(size=4) +
+  scale_color_viridis(discrete = T, option = "viridis") + ggplot2::theme_bw()
 p1
 ```
 
-```{r, messages = F,}
+```{r ordination stats table, messages = F}
 #Stats for input.PCoA
 dist <- phyloseq::distance(tps, method = "bray")
 input.PCoA.stats <- adonis(dist ~ treatment, data = data.frame(sample_data(tps)))
-kable(input.PCoA.stats$aov.tab)
+kable(input.PCoA.stats$aov.tab, align = "c", format = "html", digits = 3)
 ```
-```{r, messages = F,}
+```{r relative abundance, messages = F}
 # Relative Abundance in inputs
 # Put phyloseq object into a df with .02% phylum (glomed at phylum level)
 RelativeAbundanceDf <- function(physeq) {
@@ -85,12 +83,13 @@ treatment_names <- c(
 
 # Function to plot relative abundance
 PlotRelativeAbundance <- function(df) {
-  ggplot(df, aes(x = as.factor(Sample), y = Abundance, fill = Phylum)) + 
-  geom_bar(stat = "identity", color = "black") +
-  theme(axis.title.x = element_blank()) + 
-  guides(fill = guide_legend(reverse = TRUE, keywidth = 1, keyheight = 1)) + 
-  ylab("Relative abundance of top 5 most abundant phyla \n in each input") +
-  xlab("Incubation inputs")
+  ggplot(df, aes(x = as.factor(Sample), y = Abundance, fill = Phylum)) +
+    geom_bar(stat = "identity", color = "black", size = 0.05) +
+    theme(axis.title.x = element_blank()) + 
+    guides(fill = guide_legend(reverse = TRUE, keywidth = 1, keyheight = 1)) + 
+    ylab("Relative abundance") +
+    xlab("Incubation inputs") +
+    scale_fill_viridis_d()
 }
 
 tps.merged <- merge_samples(tps, "treatment")
@@ -100,16 +99,39 @@ top5 <- RelativeAbundanceDf(tps.merged) %>%
   select(Sample, Abundance, Phylum) %>%
   group_by(Sample) %>%
   arrange(desc(Abundance)) %>%
-  top_n(5, Abundance)
+  top_n(5, Abundance) 
   
-
-plot <- PlotRelativeAbundance(top5) + 
+top5
+```
+```{r figure save, message=F}
+plot <- PlotRelativeAbundance(top5) +
   scale_x_discrete(labels = treatment_names) 
 
 plot
-
-png("../Figures/rela_abund_input.png",height=4,width=6,units='in',res=300)
-plot + scale_fill_viridis(discrete = T, option = "viridis") + ggplot2::theme_bw()
-dev.off()
-plot + scale_fill_viridis(discrete = T, option = "viridis") + ggplot2::theme_bw()
+#ggsave("../Figures/Fig_1.tiff", plot = plot, device = "tiff", width = 90, height = 180, units = "mm", dpi = 500)
 ```
+```{r}
+theme_my <- function(base_size = 7, base_family = "Palatino")
+{
+  txt <- element_text(size = 6, colour = "black", face = "plain")
+  bold_txt <- element_text(size = 7, colour = "black", face = "bold")
+
+  theme_bw(base_size = base_size, base_family = base_family) +
+  theme(
+    legend.key = element_blank(), 
+    strip.background = element_blank(), 
+
+    text = txt, 
+    plot.title = txt, 
+
+    axis.title = bold_txt, 
+    axis.text = txt,
+    axis.text.x = element_text(angle = 25, vjust = 1, hjust = 1),
+
+    legend.title = bold_txt, 
+    legend.text = txt) 
+}
+plot + theme_my()
+ggsave("../Figures/Fig_1a.tiff", plot = plot + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
+```
+
