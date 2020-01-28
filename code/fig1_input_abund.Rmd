@@ -102,9 +102,9 @@ RelativeAbundanceDf <- function(physeq) {
 
 
 treatment_names <- c(
-  "AlfalfaAmend" = "Alfalfa amendment",
-  "AlfalfaSoil" = "Starting soil",
-  "CompostAmend" = "Compost amendment")
+  "AlfalfaAmend" = "Alfalfa",
+  "AlfalfaSoil" = "Soil",
+  "CompostAmend" = "Compost")
 
 # Function to plot relative abundance
 PlotRelativeAbundance <- function(df) {
