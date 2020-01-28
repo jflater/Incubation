@@ -517,6 +517,12 @@ NA
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>xtable::xtable(input.PCoA.stats$aov.tab)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SumsOfSqs"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["MeanSqs"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F.Model"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["R2"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Pr(>F)"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"2","2":"3.5278208","3":"1.76391039","4":"78.47187","5":"0.94009958","6":"0.001","_rn_":"treatment"},{"1":"10","2":"0.2247825","3":"0.02247825","4":"NA","5":"0.05990042","6":"NA","_rn_":"Residuals"},{"1":"12","2":"3.7526033","3":"NA","4":"NA","5":"1.00000000","6":"NA","_rn_":"Total"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <pre class="r"><code># Relative Abundance in inputs
 # Put phyloseq object into a df with .02% phylum (glomed at phylum level)
 RelativeAbundanceDf &lt;- function(physeq) {
@@ -555,8 +561,8 @@ top5 &lt;- RelativeAbundanceDf(tps.merged) %&gt;%
   
 kable(top5, &quot;html&quot;) %&gt;%
     kable_styling() %&gt;%
-    scroll_box(width = &quot;500px&quot;, height = &quot;200px&quot;)  </code></pre>
-<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:200px; overflow-x: scroll; width:500px; ">
+    scroll_box(width = &quot;500px&quot;, height = &quot;500px&quot;)  </code></pre>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:500px; overflow-x: scroll; width:500px; ">
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

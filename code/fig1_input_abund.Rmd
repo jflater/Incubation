@@ -53,9 +53,31 @@ tps <- rarefy_even_depth(tps, rngseed = 423423423)
 sample_sums(tps)
 physeq.dist <- ordinate(tps, "PCoA", "bray")
 p1 <- plot_ordination(tps, physeq.dist, type = "samples", color = "treatment") +
-  geom_point(size=4) +
-  scale_color_viridis(discrete = T, option = "viridis") + ggplot2::theme_bw()
+  geom_point(size=2) +
+  labs(color = "Input material") +
+  scale_color_viridis(discrete = T, option = "viridis", labels = c("Alfalfa", "Soil", "Compost")) + ggplot2::theme_bw()
 p1
+theme_my <- function(base_size = 7, base_family = "Palatino")
+{
+  txt <- element_text(size = 6, colour = "black", face = "plain")
+  bold_txt <- element_text(size = 7, colour = "black", face = "bold")
+
+  theme_bw(base_size = base_size, base_family = base_family) +
+  theme(
+    legend.key = element_blank(), 
+    strip.background = element_blank(), 
+
+    text = txt, 
+    plot.title = txt, 
+
+    axis.title = bold_txt, 
+    axis.text = txt,
+    axis.text.x = element_text(angle = 25, vjust = 1, hjust = 1),
+
+    legend.title = bold_txt, 
+    legend.text = txt) 
+}
+ggsave("../Figures/Fig_2.tiff", plot = p1 + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 
 Samples were resampled at 4022 reads per sample. Samples were significantly different from each other as per `adonis()`.
@@ -66,6 +88,7 @@ dist <- phyloseq::distance(tps, method = "bray")
 input.PCoA.stats <- adonis(dist ~ treatment, data = data.frame(sample_data(tps)))
 kable(input.PCoA.stats$aov.tab, "html") %>%
     kable_styling()
+xtable::xtable(input.PCoA.stats$aov.tab)
 ```
 ```{r relative abundance, messages = F}
 # Relative Abundance in inputs
@@ -106,7 +129,7 @@ top5 <- RelativeAbundanceDf(tps.merged) %>%
   
 kable(top5, "html") %>%
     kable_styling() %>%
-    scroll_box(width = "500px", height = "200px")  
+    scroll_box(width = "500px", height = "500px")  
 ```
 ```{r figure save, message=F}
 plot <- PlotRelativeAbundance(top5) +

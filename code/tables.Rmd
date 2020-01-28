@@ -1,0 +1,18 @@
+---
+title: "Untitled"
+author: "Jared"
+date: "1/28/2020"
+output: pdf_document
+---
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrrr}
+  \hline
+ & Df & SumsOfSqs & MeanSqs & F.Model & R2 & Pr($>$F) \\ 
+  \hline
+Treatment & 2 & 3.53 & 1.76 & 78.47 & 0.94 & 0.0010 \\ 
+  Residuals & 10 & 0.22 & 0.02 &  & 0.06 &  \\ 
+  Total & 12 & 3.75 &  &  & 1.00 &  \\ 
+   \hline
+\end{tabular}
+\end{table}
