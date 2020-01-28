@@ -28,6 +28,7 @@
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
 <script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -394,23 +395,6 @@ div.tocify {
 
 
 <pre class="r"><code>knitr::opts_knit$set(root.dir = normalizePath(&quot;.&quot;))</code></pre>
-<pre><code>## Loading required package: permute</code></pre>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## This is vegan 2.5-6</code></pre>
-<pre><code>## ── Attaching packages ───────────────────── tidyverse 1.3.0 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
-## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
-## ✓ tidyr   1.0.0     ✓ stringr 1.4.0
-## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
-<pre><code>## ── Conflicts ──────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre><code>## Loading required package: viridisLite</code></pre>
-<pre><code>## 
-## Attaching package: &#39;kableExtra&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     group_rows</code></pre>
 <div id="relative-abundance-bar-plots-for-the-incubation-inputs" class="section level1">
 <h1>Relative abundance bar plots for the incubation inputs</h1>
 <pre class="r"><code>tps = inc.inputs
@@ -419,57 +403,44 @@ div.tocify {
 min(taxa_sums(otu_table(tps)))</code></pre>
 <pre><code>## [1] 0</code></pre>
 <pre><code>## [1] 2</code></pre>
-<pre class="r"><code>tps &lt;- rarefy_even_depth(tps, rngseed = 423423423) %&gt;%
-  filter_taxa(function(x) sum(x) &gt;= 2, T)</code></pre>
-<pre><code>## `set.seed(423423423)` was used to initialize repeatable random subsampling.</code></pre>
-<pre><code>## Please record this for your records so others can reproduce.</code></pre>
-<pre><code>## Try `set.seed(423423423); .Random.seed` for the full vector</code></pre>
-<pre><code>## ...</code></pre>
-<pre><code>## 1289OTUs were removed because they are no longer 
-## present in any sample after random subsampling</code></pre>
-<pre><code>## ...</code></pre>
-<pre class="r"><code>sample_sums(tps)</code></pre>
 <pre><code>## 2mm.dry.alfalfa.plant2 2mm.dry.alfalfa.plant3 2mm.dry.alfalfa.plant4 
-##                   4007                   4002                   3998 
+##                   4022                   4022                   4022 
 ## 2mm.dry.alfalfa.plant5 2mm.dry.alfalfa.plant6 2mm.dry.alfalfa.plant7 
-##                   4012                   3996                   3997 
+##                   4022                   4022                   4022 
 ##   2mm.dry.alfalfa.soil       2mm.dry.compost2       2mm.dry.compost3 
-##                   3467                   3953                   3969 
+##                   4022                   4022                   4022 
 ##       2mm.dry.compost4       2mm.dry.compost5       2mm.dry.compost6 
-##                   3972                   3958                   3976 
+##                   4022                   4022                   4022 
 ##       2mm.dry.compost7 
-##                   3959</code></pre>
-<pre class="r"><code>physeq.dist &lt;- ordinate(tps, &quot;PCoA&quot;, &quot;bray&quot;)
-p1 &lt;- plot_ordination(tps, physeq.dist, type = &quot;samples&quot;, color = &quot;treatment&quot;) +
-  geom_point(size=4) +
-  scale_color_viridis(discrete = T, option = &quot;viridis&quot;) + ggplot2::theme_bw()
-p1</code></pre>
-<p><img src="fig1_input_abund_files/figure-html/rarefy%20and%20ordinate-1.png" width="816" /></p>
+##                   4022</code></pre>
+<p><img src="fig1_input_abund_files/figure-html/ordinate-1.png" width="816" /></p>
+<p>Samples were resampled at 4022 reads per sample. Samples were significantly different from each other as per <code>adonis()</code>.</p>
 <pre class="r"><code>#Stats for input.PCoA
 dist &lt;- phyloseq::distance(tps, method = &quot;bray&quot;)
 input.PCoA.stats &lt;- adonis(dist ~ treatment, data = data.frame(sample_data(tps)))
-kable(input.PCoA.stats$aov.tab, align = &quot;c&quot;, format = &quot;html&quot;, digits = 3)</code></pre>
-<table>
+kable(input.PCoA.stats$aov.tab, &quot;html&quot;) %&gt;%
+    kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
 </th>
-<th style="text-align:center;">
+<th style="text-align:right;">
 Df
 </th>
-<th style="text-align:center;">
+<th style="text-align:right;">
 SumsOfSqs
 </th>
-<th style="text-align:center;">
+<th style="text-align:right;">
 MeanSqs
 </th>
-<th style="text-align:center;">
+<th style="text-align:right;">
 F.Model
 </th>
-<th style="text-align:center;">
+<th style="text-align:right;">
 R2
 </th>
-<th style="text-align:center;">
+<th style="text-align:right;">
 Pr(&gt;F)
 </th>
 </tr>
@@ -479,22 +450,22 @@ Pr(&gt;F)
 <td style="text-align:left;">
 treatment
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 2
 </td>
-<td style="text-align:center;">
-3.533
+<td style="text-align:right;">
+3.5278208
 </td>
-<td style="text-align:center;">
-1.767
+<td style="text-align:right;">
+1.7639104
 </td>
-<td style="text-align:center;">
-84.41
+<td style="text-align:right;">
+78.47187
 </td>
-<td style="text-align:center;">
-0.944
+<td style="text-align:right;">
+0.9400996
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 0.001
 </td>
 </tr>
@@ -502,22 +473,22 @@ treatment
 <td style="text-align:left;">
 Residuals
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 10
 </td>
-<td style="text-align:center;">
-0.209
+<td style="text-align:right;">
+0.2247825
 </td>
-<td style="text-align:center;">
-0.021
+<td style="text-align:right;">
+0.0224782
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 NA
 </td>
-<td style="text-align:center;">
-0.056
+<td style="text-align:right;">
+0.0599004
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 NA
 </td>
 </tr>
@@ -525,22 +496,22 @@ NA
 <td style="text-align:left;">
 Total
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 12
 </td>
-<td style="text-align:center;">
-3.743
+<td style="text-align:right;">
+3.7526033
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 NA
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 NA
 </td>
-<td style="text-align:center;">
-1.000
+<td style="text-align:right;">
+1.0000000
 </td>
-<td style="text-align:center;">
+<td style="text-align:right;">
 NA
 </td>
 </tr>
@@ -579,13 +550,195 @@ top5 &lt;- RelativeAbundanceDf(tps.merged) %&gt;%
   select(Sample, Abundance, Phylum) %&gt;%
   group_by(Sample) %&gt;%
   arrange(desc(Abundance)) %&gt;%
-  top_n(5, Abundance) 
+  top_n(5, Abundance) %&gt;%
+  arrange(Sample, desc(Abundance))
   
-top5</code></pre>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["Sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Abundance"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Phylum"],"name":[3],"type":["fctr"],"align":["left"]}],"data":[{"1":"AlfalfaAmend","2":"0.46934866","3":"Bacteria_unclassified"},{"1":"AlfalfaAmend","2":"0.40034150","3":"Proteobacteria"},{"1":"CompostAmend","2":"0.33884054","3":"Actinobacteria"},{"1":"CompostAmend","2":"0.25841846","3":"Bacteria_unclassified"},{"1":"CompostAmend","2":"0.25316349","3":"Firmicutes"},{"1":"AlfalfaSoil","2":"0.21863282","3":"Proteobacteria"},{"1":"AlfalfaSoil","2":"0.21055668","3":"Actinobacteria"},{"1":"AlfalfaSoil","2":"0.17680992","3":"Acidobacteria"},{"1":"AlfalfaSoil","2":"0.12143063","3":"Bacteria_unclassified"},{"1":"AlfalfaSoil","2":"0.10470147","3":"Verrucomicrobia"},{"1":"AlfalfaAmend","2":"0.07342162","3":"Bacteroidetes"},{"1":"CompostAmend","2":"0.06928154","3":"Proteobacteria"},{"1":"AlfalfaAmend","2":"0.04485257","3":"Actinobacteria"},{"1":"CompostAmend","2":"0.04136713","3":"Chloroflexi"},{"1":"AlfalfaAmend","2":"0.01007829","3":"Firmicutes"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
+kable(top5, &quot;html&quot;) %&gt;%
+    kable_styling() %&gt;%
+    scroll_box(width = &quot;500px&quot;, height = &quot;200px&quot;)  </code></pre>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:200px; overflow-x: scroll; width:500px; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Sample
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Abundance
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Phylum
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+AlfalfaAmend
+</td>
+<td style="text-align:right;">
+0.4684651
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaAmend
+</td>
+<td style="text-align:right;">
+0.4000497
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaAmend
+</td>
+<td style="text-align:right;">
+0.0736781
+</td>
+<td style="text-align:left;">
+Bacteroidetes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaAmend
+</td>
+<td style="text-align:right;">
+0.0454583
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaAmend
+</td>
+<td style="text-align:right;">
+0.0101525
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaSoil
+</td>
+<td style="text-align:right;">
+0.2163103
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaSoil
+</td>
+<td style="text-align:right;">
+0.2001492
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaSoil
+</td>
+<td style="text-align:right;">
+0.1703133
+</td>
+<td style="text-align:left;">
+Acidobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaSoil
+</td>
+<td style="text-align:right;">
+0.1374938
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AlfalfaSoil
+</td>
+<td style="text-align:right;">
+0.1019393
+</td>
+<td style="text-align:left;">
+Verrucomicrobia
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CompostAmend
+</td>
+<td style="text-align:right;">
+0.3362755
+</td>
+<td style="text-align:left;">
+Actinobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CompostAmend
+</td>
+<td style="text-align:right;">
+0.2582463
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CompostAmend
+</td>
+<td style="text-align:right;">
+0.2543511
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CompostAmend
+</td>
+<td style="text-align:right;">
+0.0704459
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CompostAmend
+</td>
+<td style="text-align:right;">
+0.0411072
+</td>
+<td style="text-align:left;">
+Chloroflexi
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <pre class="r"><code>plot &lt;- PlotRelativeAbundance(top5) +
   scale_x_discrete(labels = treatment_names) 
@@ -613,9 +766,7 @@ plot</code></pre>
     legend.title = bold_txt, 
     legend.text = txt) 
 }
-plot + theme_my()</code></pre>
-<p><img src="fig1_input_abund_files/figure-html/unnamed-chunk-1-1.png" width="816" /></p>
-<pre class="r"><code>ggsave(&quot;../Figures/Fig_1a.tiff&quot;, plot = plot + theme_my(), device = &quot;tiff&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
+ggsave(&quot;../Figures/Fig_1a.tiff&quot;, plot = plot + theme_my(), device = &quot;tiff&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
 </div>
 
 

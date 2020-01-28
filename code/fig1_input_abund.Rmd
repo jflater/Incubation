@@ -14,7 +14,7 @@ output:
 ```{r setup, messages = F, cache=TRUE}
 knitr::opts_knit$set(root.dir = normalizePath("."))
 ```
-```{r Loading libraries, messages = F, echo=FALSE}
+```{r Loading libraries, messages = F, echo=FALSE, warning=FALSE, include=FALSE}
 library(phyloseq)
 library(vegan)
 library(tidyverse)
@@ -22,7 +22,7 @@ library(viridis)
 library(kableExtra)
 ```
 # Relative abundance bar plots for the incubation inputs
-```{r Make phyloseq, messages = F, echo=FALSE}
+```{r Make phyloseq, message=FALSE, echo=FALSE, warning=FALSE, include=FALSE}
 # Read in the phyloseq object, raw object from mothur, see code file mothur_to_phyloseq.R
 inc.raw.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
 
@@ -46,12 +46,11 @@ tps <- filter_taxa(tps, function(x) sum(x) >= 2, T)
 min(taxa_sums(otu_table(tps)))
 rm(inc.inputs)
 ```
-```{r rarefy and ordinate, messages = F}
-tps <- rarefy_even_depth(tps, rngseed = 423423423) %>%
-  filter_taxa(function(x) sum(x) >= 2, T)
-
+```{r rarefy, message=FALSE, echo=FALSE, warning=FALSE, include=FALSE}
+tps <- rarefy_even_depth(tps, rngseed = 423423423) 
+```
+```{r ordinate, message=F, echo=F, warning=F}
 sample_sums(tps)
-
 physeq.dist <- ordinate(tps, "PCoA", "bray")
 p1 <- plot_ordination(tps, physeq.dist, type = "samples", color = "treatment") +
   geom_point(size=4) +
@@ -59,11 +58,14 @@ p1 <- plot_ordination(tps, physeq.dist, type = "samples", color = "treatment") +
 p1
 ```
 
+Samples were resampled at 4022 reads per sample. Samples were significantly different from each other as per `adonis()`.
+
 ```{r ordination stats table, messages = F}
 #Stats for input.PCoA
 dist <- phyloseq::distance(tps, method = "bray")
 input.PCoA.stats <- adonis(dist ~ treatment, data = data.frame(sample_data(tps)))
-kable(input.PCoA.stats$aov.tab, align = "c", format = "html", digits = 3)
+kable(input.PCoA.stats$aov.tab, "html") %>%
+    kable_styling()
 ```
 ```{r relative abundance, messages = F}
 # Relative Abundance in inputs
@@ -99,9 +101,12 @@ top5 <- RelativeAbundanceDf(tps.merged) %>%
   select(Sample, Abundance, Phylum) %>%
   group_by(Sample) %>%
   arrange(desc(Abundance)) %>%
-  top_n(5, Abundance) 
+  top_n(5, Abundance) %>%
+  arrange(Sample, desc(Abundance))
   
-top5
+kable(top5, "html") %>%
+    kable_styling() %>%
+    scroll_box(width = "500px", height = "200px")  
 ```
 ```{r figure save, message=F}
 plot <- PlotRelativeAbundance(top5) +
@@ -131,7 +136,6 @@ theme_my <- function(base_size = 7, base_family = "Palatino")
     legend.title = bold_txt, 
     legend.text = txt) 
 }
-plot + theme_my()
 ggsave("../Figures/Fig_1a.tiff", plot = plot + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 
