@@ -113,7 +113,7 @@ PlotRelativeAbundance <- function(df) {
     theme(axis.title.x = element_blank()) + 
     guides(fill = guide_legend(reverse = TRUE, keywidth = 1, keyheight = 1)) + 
     ylab("Relative abundance") +
-    xlab("Incubation inputs") +
+    xlab("Input material") +
     scale_fill_viridis_d()
 }
 
