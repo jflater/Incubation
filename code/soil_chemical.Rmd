@@ -5,27 +5,108 @@ date: "12/4/2019"
 output: html_document
 ---
 ```{r}
-library(tidyverse)
-library(ggplot2)
 library(phyloseq)
-library(DESeq2)
+library(vegan)
+library(tidyverse)
+library(nlme)
+library(emmeans)
+library(ggpubr)
+library(agricolae)
+library(broom)
+library(xtable)
+library(viridis)
 ```
 
-# Characteristics of the starting soil    
+# Characteristics of the starting soil  
+
 Soil for the incubation was collected from organic alfalfa plots, surface cores were collected from all plots and composited into a bulk soil sample. Bulk soil was sieved to 2mm and allowed to air-dry before microcosm construction. 
-
-```{r, meta data}
-data <- readRDS("data/RDS/incubation_physeq_Aug18.RDS")
-meta_data <- data.frame(sample_data(data))
-```
 
 The characteristics of the starting soil are as follows:
 ```{r}
-meta_data %>%
-  filter(treatment %in% c("AlfalfaSoil", "AlfalfaAmend","CompostAmend")) %>%
-  mutate(Inorganic_N = NO3 + NH3) %>%
-  ggplot(aes(x = treatment, y = Inorganic_N)) +
-    geom_bar(stat = "identity") +
-    scale_x_discrete(limits=c("AlfalfaAmend","CompostAmend", "AlfalfaSoil"))
+inc.raw.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
+
+inc.physeq <- subset_samples(inc.raw.physeq, day %in% c("7",
+                                                        "14",
+                                                        "21",
+                                                        "35",
+                                                        "49",
+                                                        "97"))
+
+#Rename treatments to more informative titles
+data <- data.frame(sample_data(inc.physeq)) %>%
+  mutate(treatment = recode(treatment,
+                            'Control' = 'Reference',
+                            'CompAlfa' = 'Mix')) %>%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) %>%
+  mutate(TreatmentAndDay = paste(treatment, day))
+data$treatment <- relevel(data$treatment, ref = "Reference") 
+data$day <- as.factor(data$day)
+rownames(data) <- data$i_id
+sample_data(inc.physeq) <- data
+sample_data(inc.physeq)$day <- as.factor(sample_data(inc.physeq)$day)
+
+```
+```{r}
+inc.model.data <- lme(Inorganic_N~treatment * day, random=~1|replication 
+                      , data = data
+                      , weights = varIdent(form= ~1|day*treatment)
+                      , control = lmeControl(opt = "optim", msVerbose = TRUE))
+
+data1 <- summary(inc.model.data)
+data1
+anova.lme(inc.model.data)
+anova(inc.model.data)
+anova(summary(inc.model.data))
+#xtable(anova(summary(inc.model.data)))
+
+em <- emmeans(inc.model.data, c("day", "treatment"), data = data)
+em
+sum_em <- summary(em)
+sum_em
+levels(data$treatment)
+
+class(data$treatment)
+
+data$treatment <- ordered(data$treatment, levels = c("Alfalfa", "Mix", "Compost", "Reference"))
+```
+
+
+```{r}
+theme_set(theme_bw())
+
+p <- ggplot(data = data, aes(x = day, y = Inorganic_N)) +
+  geom_point(aes(colour = treatment), size = 1) +
+  stat_summary(aes(group = treatment), fun.y = mean,  geom = "line", size = .5, colour = "black") +
+  
+  xlab("Day") +
+  ylab("Inorganic Nitrogen") +
+  labs(color = "Treatment") +
+  facet_wrap(~treatment) + 
+  scale_color_viridis(discrete = T, option = "viridis")
+
+theme_my <- function(base_size = 7, base_family = "Palatino")
+{
+  txt <- element_text(size = 6, colour = "black", face = "plain")
+  bold_txt <- element_text(size = 7, colour = "black", face = "bold")
+
+  theme_bw(base_size = base_size, base_family = base_family) +
+  theme(
+    legend.key = element_blank(), 
+    strip.background = element_blank(), 
+
+    text = txt, 
+    plot.title = txt, 
+
+    axis.title = bold_txt, 
+    axis.text = txt,
+    axis.text.x = element_text(angle = 25, vjust = 1, hjust = 1),
+
+    legend.title = bold_txt, 
+    legend.text = txt,
+    
+    strip.text.x = txt) 
+}
+p + theme_my()
+ggsave("../Figures/Fig_3.tiff", plot = p + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 
