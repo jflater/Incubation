@@ -70,5 +70,12 @@ plot <- plot_ordination(rare, NMDS, color = "day") + stat_ellipse(geom = "polygo
   scale_color_viridis(discrete = T) 
 
 ggsave("../Figures/Fig_4.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
+
+plot <- plot_ordination(rare, NMDS, color = "treatment") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(color = treatment)) +
+  theme_my() +
+  labs(color = "Treatment") +
+  scale_color_viridis(discrete = T) 
+
+ggsave("../Figures/Fig_5.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 
