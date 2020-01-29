@@ -161,4 +161,26 @@ theme_my <- function(base_size = 7, base_family = "Palatino")
 }
 ggsave("../Figures/Fig_1a.tiff", plot = plot + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
 ```
+```{r}
+treatment_names <- c(
+  "AlfalfaAmend" = "Alfalfa",
+  "AlfalfaSoil" = "Soil",
+  "CompostAmend" = "Compost")
+
+plot <- data.frame(sample_data(tps)) %>%
+  mutate(Inorganic_N = NH3 + NO3) %>%
+  filter(replication == 1) %>%
+  ggplot(aes(x = treatment, y = Inorganic_N, fill = treatment)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label=round(Inorganic_N, digits = 2)), position = position_dodge(width=0.9), vjust=-0.25, size = 2) +
+  scale_x_discrete(labels = treatment_names) +
+  scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30)) +
+  scale_fill_viridis(discrete = T) +
+  theme_my() +
+  theme(legend.position = "none") + 
+    ylab("Inorganic N concentration") +
+    xlab("Input material")
+ggsave("../Figures/Fig_S1.tiff", plot = plot, device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
+```
+
 

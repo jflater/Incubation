@@ -32,19 +32,20 @@ inc.physeq <- subset_samples(inc.raw.physeq, day %in% c("7",
                                                         "49",
                                                         "97"))
 
+inc.inputs <- subset_samples(inc.raw.physeq, treatment %in% c("AlfalfaAmend", 
+                                                              "AlfalfaSoil",
+                                                              "CompostAmend"))
 #Rename treatments to more informative titles
-data <- data.frame(sample_data(inc.physeq)) %>%
-  mutate(treatment = recode(treatment,
-                            'Control' = 'Reference',
-                            'CompAlfa' = 'Mix')) %>%
+data <- data.frame(sample_data(inc.raw.physeq)) %>%
   mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) %>%
   mutate(TreatmentAndDay = paste(treatment, day))
+
 data$treatment <- relevel(data$treatment, ref = "Reference") 
 data$day <- as.factor(data$day)
-rownames(data) <- data$i_id
-sample_data(inc.physeq) <- data
-sample_data(inc.physeq)$day <- as.factor(sample_data(inc.physeq)$day)
 
+rownames(data) <- data$i_id
+sample_data(phy) <- data
+sample_data(phy)$day <- as.factor(sample_data(inc.physeq)$day)
 ```
 ```{r}
 inc.model.data <- lme(Inorganic_N~treatment * day, random=~1|replication 
