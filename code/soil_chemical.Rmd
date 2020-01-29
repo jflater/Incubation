@@ -174,8 +174,10 @@ day_ggboxplot <- function(df){
     stat_compare_means(method = "anova", label.y = max(data$Inorganic_N), size = 2, position = position_nudge(x = 1, y = 1.5))
 }
 p <- day_ggboxplot(data) +
-  facet_grid(~day) 
+  facet_grid(~day) +
+  theme(legend.position = "none")
 p
-ggsave("../Figures/Fig_S3.png", plot = p + theme_my(), device = "png", width = 180, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/Fig_S3.png", plot = p + theme_my() +
+  theme(legend.position = "none"), device = "png", width = 180, height = 90, units = "mm", dpi = 500)
 ```
 
