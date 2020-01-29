@@ -65,3 +65,26 @@ log_plot <- function(sigtab,t1){
     coord_flip() +
     ggtitle(t1)
 } 
+#
+#
+# Theme for figures, makes it look nice at publishing dimensions see elseveir sizes
+theme_my <- function(base_size = 7, base_family = "Palatino")
+{
+  txt <- element_text(size = 6, colour = "black", face = "plain")
+  bold_txt <- element_text(size = 7, colour = "black", face = "bold")
+  
+  theme_bw(base_size = base_size, base_family = base_family) +
+    theme(
+      legend.key = element_blank(), 
+      strip.background = element_blank(), 
+      
+      text = txt, 
+      plot.title = txt, 
+      
+      axis.title = bold_txt, 
+      axis.text = txt,
+      axis.text.x = element_text(angle = 25, vjust = 1, hjust = 1),
+      
+      legend.title = bold_txt, 
+      legend.text = txt) 
+}

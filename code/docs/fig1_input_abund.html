@@ -774,6 +774,54 @@ plot</code></pre>
 }
 ggsave(&quot;../Figures/Fig_1a.tiff&quot;, plot = plot + theme_my(), device = &quot;tiff&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
 </div>
+<div id="inorganic-n-concentration-of-inputs" class="section level1">
+<h1>Inorganic N concentration of inputs</h1>
+<pre class="r"><code>treatment_names &lt;- c(
+  &quot;AlfalfaAmend&quot; = &quot;Alfalfa&quot;,
+  &quot;AlfalfaSoil&quot; = &quot;Soil&quot;,
+  &quot;CompostAmend&quot; = &quot;Compost&quot;)
+
+plot &lt;- data.frame(sample_data(tps)) %&gt;%
+  mutate(Inorganic_N = NH3 + NO3) %&gt;%
+  filter(replication == 1) %&gt;%
+  ggplot(aes(x = treatment, y = Inorganic_N, fill = treatment)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  geom_text(aes(label=round(Inorganic_N, digits = 2)), position = position_dodge(width=0.9), vjust=-0.25, size = 2) +
+  scale_x_discrete(labels = treatment_names) +
+  scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30)) +
+  scale_fill_viridis(discrete = T) +
+  theme_my() +
+  theme(legend.position = &quot;none&quot;) + 
+    ylab(&quot;Inorganic N concentration&quot;) +
+    xlab(&quot;Input material&quot;)
+plot</code></pre>
+<p><img src="fig1_input_abund_files/figure-html/unnamed-chunk-2-1.png" width="816" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/Fig_S1.tiff&quot;, plot = plot, device = &quot;tiff&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
+</div>
+<div id="cn-ratio-of-inputs" class="section level1">
+<h1>C:N ratio of inputs</h1>
+<pre class="r"><code>treatment_names &lt;- c(
+  &quot;AlfalfaAmend&quot; = &quot;Alfalfa&quot;,
+  &quot;AlfalfaSoil&quot; = &quot;Soil&quot;,
+  &quot;CompostAmend&quot; = &quot;Compost&quot;)
+
+plot &lt;- data.frame(sample_data(tps)) %&gt;%
+  mutate(C_N = C_flash / N_flash) %&gt;%
+  filter(replication == 1) %&gt;%
+  ggplot(aes(x = treatment, y = C_N, fill = treatment)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  geom_text(aes(label=round(C_N, digits = 2)), position = position_dodge(width=0.9), vjust=-0.25, size = 2) +
+  scale_x_discrete(labels = treatment_names) +
+  scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30)) +
+  scale_fill_viridis(discrete = T) +
+  theme_my() +
+  theme(legend.position = &quot;none&quot;) + 
+    ylab(&quot;C:N ratio&quot;) +
+    xlab(&quot;Input material&quot;)
+plot</code></pre>
+<p><img src="fig1_input_abund_files/figure-html/unnamed-chunk-3-1.png" width="816" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/Fig_S2.png&quot;, plot = plot, device = &quot;png&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
+</div>
 
 
 
