@@ -1,0 +1,104 @@
+---
+title: "Untitled"
+author: "Jared"
+date: "1/29/2020"
+output: html_document
+---
+https://static-content.springer.com/esm/art%3A10.1038%2Fs41598-017-06693-z/MediaObjects/41598_2017_6693_MOESM1_ESM.pdf
+```{r setup, include=FALSE}
+#Code for PRC and dbPRC
+#Required packages
+library(vegan)
+library(phyloseq)
+library(ape)
+
+
+#Readin dataset
+meta <- data.frame(sample_data(rare)) %>%
+  select(treatment, day)
+otus <- data.frame(t(otu_table(rare)))
+
+parent <- cbind(meta, otus)
+  
+response <- parent[,3:length(parent)]
+time<-as.factor(parent[,2])
+treatment<-as.factor(parent[,1])
+
+#Set up objects and matrices
+y <-deparse(substitute(response))
+x <-deparse(substitute(treatment))
+z <-deparse(substitute(time))
+
+#Create formulas and design matrices
+fla <-as.formula(paste("~", x, "+", z))
+mf <-model.frame(fla, response, na.action = na.pass)
+fla.zx <-as.formula(paste("~", z, ":", x))
+fla.z <-as.formula(paste("~", z))
+X = model.matrix(fla.zx, mf)[, -c(seq_len(nlevels(time) + 1))]
+Z = model.matrix(fla.z, mf)[, -1]
+
+#Calculation of non-distance based PRC
+#Non-distance based RDA
+RDA <-rda(response ~ X + Condition(Z))
+
+#Conversion of RDA to PRC compatible format
+RDA$terminfo$xlev = list(levels(time), levels(treatment))
+names(RDA$terminfo$xlev) = c(paste(z), paste(x))
+RDA$call <-match.call()
+class(RDA) <-c("prc", class(RDA))
+plot(RDA, main = "PRC")
+
+#Store species weights
+RDA.sp<-linestack(scores(RDA, ch = 1, display = "species", scaling = 3))
+RDA.sp<-as.matrix(RDA.sp)
+row.names(RDA.sp) = rownames(scores(RDA, display = "species"))
+colnames(RDA.sp) = "Weight"
+
+# #Calculation of Weighted UniFrac
+# #Read in the OTU community set
+# otu.table<-read.csv("PRCinput.csv", sep = ",", header = TRUE, row.names = 1)
+# otu.table<-otu.table[,3:length(otu.table)]
+# 
+# #Create phyloseq compatible OTU and taxonomy tables
+# otu.table<-t(otu.table)
+# tax.map<-read.csv("Taxmap.csv", sep = ",", header = TRUE) 
+# otu.table<-data.matrix(otu.table, rownames.force = TRUE)
+# tax.map<-as.matrix(tax.map) 
+# phyloseq.otu.table<-otu_table(otu.table, taxa_are_rows = TRUE) 
+# class(phyloseq.otu.table) 
+# class(tax.map) 
+# 
+# #Read in the phylogenetic tree matrix
+# phy.tree<-read_tree("Phylotree.txt")
+# phy.tree<-root(phy.tree,outgroup = "AKK", resolve.root = TRUE) 
+# 
+# #Specific to test dataset
+# plot(phy.tree)
+# 
+# #Merge OTU table, taxonomy map, and phylogenetic tree into phyloseq object
+# phylo.set<-merge_phyloseq(phy.tree, phyloseq.otu.table, tax.map)
+
+#Calculate Weighted UniFrac distance matrix
+wUF.dm<-UniFrac(rare, weighted = TRUE, fast = TRUE)
+wUF.table<-as.matrix(dist(wUF.dm))
+
+#Save distance matrix to file
+write.table(wUF.table, file = "data/wUFdm.csv", sep = ",")
+
+#Calculation of UniFrac distance based PRC
+dbRDA <-capscale(wUF.dm ~ X + Condition(Z), data = parent[,1:2], comm = response)
+
+#Conversion of dbRDA to PRC compatible format
+dbRDA$terminfo$xlev = list(levels(time), levels(treatment))
+names(dbRDA$terminfo$xlev) = c(paste(z), paste(x))
+dbRDA$call <-match.call()
+class(dbRDA) <-c("prc", class(dbRDA))
+plot(dbRDA, main = "dbPRC")
+
+#Store species weights
+dbRDA.sp<-linestack(scores(dbRDA, ch = 1, display = "species", scaling = 3))
+dbRDA.sp<-as.matrix(dbRDA.sp)
+row.names(dbRDA.sp) = rownames(scores(dbRDA, display = "species"))
+colnames(dbRDA.sp) = "Weight"
+```
+

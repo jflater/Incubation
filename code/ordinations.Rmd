@@ -10,6 +10,7 @@ library(vegan)
 library(tidyverse)
 library(xtable)
 library(viridis)
+library(kableExtra)
 ```
 
 ```{r}
@@ -44,7 +45,7 @@ inc_phy <- merge_phyloseq(inc.physeq, tree)
 inc <- inc_phy %>%
   filter_taxa(function(x) sum(x) >= 2, T)
 inc
-rarecurve(t(otu_table(inc)))
+#rarecurve(t(otu_table(inc)))
 ```
 
 ```{r}
@@ -59,8 +60,10 @@ plot_ordination(inc, NMDS, color = "day") + stat_ellipse(geom = "polygon", type 
 rare <- inc %>%
   rarefy_even_depth(sample.size = 6000, rngseed = 432432)
 sample_sums(rare)
+rm(inc, inc_phy, inc.physeq, inc.raw.physeq, NMDS, tree)
 ```
 ```{r}
+source(file = "functions.R")
 NMDS <- ordinate(rare, "NMDS", "wunifrac")
 plot_ordination(rare, NMDS, color = "day") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(fill = day))
 
@@ -77,5 +80,115 @@ plot <- plot_ordination(rare, NMDS, color = "treatment") + stat_ellipse(geom = "
   scale_color_viridis(discrete = T) 
 
 ggsave("../Figures/Fig_5.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
+```
+# Adonis results
+```{r}
+dist <- phyloseq::distance(rare, method = "wunifrac")
+day.stats <- adonis2(dist ~ treatment + day, data = data.frame(sample_data(rare)))
+day.stats
+kable(day.stats, "html") %>%
+    kable_styling()
+```
+```{r}
+treatment.stats <- adonis(dist ~ treatment + day, data = data.frame(sample_data(rare)))
+kable(treatment.stats$aov.tab, "html") %>%
+    kable_styling()
+```
+https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca
+# Variable selection for constrained ordination
+```{r}
+env <- env %>%
+  select(treatment, day, pH, C_N, Inorganic_N, MBC_mg.kg_per_dry_wt_soil)
+
+tb_rda.all <- rda(species ~ ., env)
+
+anova(tb_rda.all)
+adjR2.tbrda <- RsquareAdj(tb_rda.all)$adj.r.squared 
+tb_rda.vasc.0 <- rda(species ~ 1, data = env) 
+tb_rda.vasc.all <- rda(species ~ ., data = env)
+sel.osR2 <- ordiR2step(tb_rda.vasc.0, scope = formula(tb_rda.vasc.all), R2scope = adjR2.tbrda, direction = 'forward', permutations = 999)
+sel.osR2
+sel.osR2$anova
+sel.osR2_adj <- sel.osR2
+sel.osR2_adj$anova$`Pr(>F)` <- p.adjust(sel.osR2$anova$`Pr(>F)`, method = 'holm', n = ncol(env))
+sel.osR2_adj$anova
+```
+
+```{r}
+rare@sam_data$day <- as.numeric(rare@sam_data$day)
+class(rare@sam_data$day)
+
+cap_ord <- ordinate(
+  physeq = rare, 
+  method = "CAP",
+  distance = dist,
+  formula = ~ day + pH + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+)
+anova_cca <- anova.cca(cap_ord, by = "margin")
+
+
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = rare,
+  ordination = cap_ord,
+  color = "day",
+  shape = "treatment",
+  axes = c(1,2)
+) +
+  geom_point(aes(colour = day, shape = treatment), alpha = 0.8, size = 4) 
+
+# Now add the environmental variables as arrows
+arrowmat <- vegan::scores(cap_ord, display = "bp")
+
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = CAP1,
+                 yend = CAP2,
+                 x = 0,
+                 y = 0,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+label_map <- aes(x = .8 * CAP1,
+                 y = .8 * CAP2,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+ordination <- cap_plot +
+  geom_segment(
+    mapping = arrow_map,
+    size = .5,
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) +
+  ggtitle("RENAME")
+ordination
+anova_cca
+
+species <- data.frame(t(otu_table(rare)))
+                      
+env <- data.frame(sample_data(rare))
+
+varp <- varpart(dist, ~ treatment, ~ day, data = env)
+varp
+plot(varp, digits = 2, Xnames = c('treatment', 'day', 'pH', 'MBC'), bg = c('thistle', 'tomato', 'turquoise', 'violet'))
+```
+```{r}
+fertil.spe <- read.delim ('https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.spe.txt', row.names = 1)
+fertil.env <- read.delim ('https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.env.txt', row.names = 1)
 ```
 
