@@ -50,11 +50,13 @@ inc
 
 ```{r}
 PCoA <- ordinate(inc, "PCoA", "wunifrac")
-plot_ordination(inc, PCoA, color = "day") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(fill = day))
+plotpcoa <- plot_ordination(inc, PCoA, color = "day") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(fill = day))
+plotpcoa
 ```
 ```{r}
 NMDS <- ordinate(inc, "NMDS", "wunifrac")
-plot_ordination(inc, NMDS, color = "day") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(fill = day))
+plotNMDS <- plot_ordination(inc, NMDS, color = "day") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(fill = day))
+plotNMDS
 ```
 ```{r}
 rare <- inc %>%
@@ -71,14 +73,14 @@ plot <- plot_ordination(rare, NMDS, color = "day") + stat_ellipse(geom = "polygo
   theme_my() +
   labs(color = "Day") +
   scale_color_viridis(discrete = T) 
-
+plot
 ggsave("../Figures/Fig_4.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
 
 plot <- plot_ordination(rare, NMDS, color = "treatment") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(color = treatment)) +
   theme_my() +
   labs(color = "Treatment") +
   scale_color_viridis(discrete = T) 
-
+plot
 ggsave("../Figures/Fig_5.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 # Adonis results
@@ -97,32 +99,57 @@ kable(treatment.stats$aov.tab, "html") %>%
 https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca
 # Variable selection for constrained ordination
 ```{r}
+species <- data.frame(t(otu_table(rare)))
+                      
+env <- data.frame(sample_data(rare))
+
 env <- env %>%
   select(treatment, day, pH, C_N, Inorganic_N, MBC_mg.kg_per_dry_wt_soil)
+```
+```{r}
+# rda
+#tb_rda.all <- rda(species ~ ., env)
+# try dbrda
+dbrda.all <- dbrda(dist ~ ., env)
 
-tb_rda.all <- rda(species ~ ., env)
+#anova(tb_rda.all)
+anova(dbrda.all)
 
-anova(tb_rda.all)
-adjR2.tbrda <- RsquareAdj(tb_rda.all)$adj.r.squared 
-tb_rda.vasc.0 <- rda(species ~ 1, data = env) 
-tb_rda.vasc.all <- rda(species ~ ., data = env)
-sel.osR2 <- ordiR2step(tb_rda.vasc.0, scope = formula(tb_rda.vasc.all), R2scope = adjR2.tbrda, direction = 'forward', permutations = 999)
-sel.osR2
-sel.osR2$anova
-sel.osR2_adj <- sel.osR2
-sel.osR2_adj$anova$`Pr(>F)` <- p.adjust(sel.osR2$anova$`Pr(>F)`, method = 'holm', n = ncol(env))
-sel.osR2_adj$anova
+#adjR2.tbrda <- RsquareAdj(tb_rda.all)$adj.r.squared 
+adjR2.dbrda <- RsquareAdj(dbrda.all)$adj.r.squared 
+
+#tb_rda.vasc.0 <- rda(species ~ 1, data = env) 
+#tb_rda.vasc.all <- rda(species ~ ., data = env)
+db_rda.vasc.0 <- dbrda(dist ~ 1, data = env) 
+db_rda.vasc.all <- dbrda(dist ~ ., data = env)
+
+#sel.osR2 <- ordiR2step(tb_rda.vasc.0, scope = formula(tb_rda.vasc.all), R2scope = adjR2.tbrda, direction = 'forward', permutations = 999)
+#sel.osR2
+sel.osR2b <- ordiR2step(db_rda.vasc.0, scope = formula(db_rda.vasc.all), R2scope = adjR2.dbrda, direction = 'both', permutations = 999)
+sel.osR2b
+
+#sel.osR2$anova
+sel.osR2b$anova
+
+#sel.osR2_adj <- sel.osR2
+sel.osR2_adjb <- sel.osR2b
+#sel.osR2_adj$anova$`Pr(>F)` <- p.adjust(sel.osR2$anova$`Pr(>F)`, method = 'holm', n = ncol(env))
+sel.osR2_adjb$anova$`Pr(>F)` <- p.adjust(sel.osR2b$anova$`Pr(>F)`, method = 'holm', n = ncol(env))
+#sel.osR2_adj$anova
+sel.osR2_adjb$anova
 ```
 
 ```{r}
 rare@sam_data$day <- as.numeric(rare@sam_data$day)
+rare@sam_data$day <- as.numeric(rare@sam_data$treatment)
 class(rare@sam_data$day)
+class(rare@sam_data$Inorganic_N)
 
 cap_ord <- ordinate(
   physeq = rare, 
   method = "CAP",
   distance = dist,
-  formula = ~ day + pH + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+  formula = ~ day + treatment 
 )
 anova_cca <- anova.cca(cap_ord, by = "margin")
 
@@ -131,11 +158,10 @@ anova_cca <- anova.cca(cap_ord, by = "margin")
 cap_plot <- plot_ordination(
   physeq = rare,
   ordination = cap_ord,
-  color = "day",
-  shape = "treatment",
+  color = "treatment",
   axes = c(1,2)
 ) +
-  geom_point(aes(colour = day, shape = treatment), alpha = 0.8, size = 4) 
+  geom_point(aes(colour = treatment), alpha = 0.8, size = 4) 
 
 # Now add the environmental variables as arrows
 arrowmat <- vegan::scores(cap_ord, display = "bp")
@@ -179,13 +205,14 @@ ordination <- cap_plot +
 ordination
 anova_cca
 
-species <- data.frame(t(otu_table(rare)))
-                      
-env <- data.frame(sample_data(rare))
-
-varp <- varpart(dist, ~ treatment, ~ day, data = env)
-varp
-plot(varp, digits = 2, Xnames = c('treatment', 'day', 'pH', 'MBC'), bg = c('thistle', 'tomato', 'turquoise', 'violet'))
+new_dist <- phyloseq::distance(rare, method = "wunifrac")
+inc.pcnm <- pcnm(new_dist)
+mod <- varpart(species, ~ ., inc.pcnm$vectors, data = env)
+showvarparts(2, bg = c("hotpink","skyblue"))
+plot(mod, bg = c("hotpink","skyblue"))
+mm <- model.matrix(~ treatment + day + pH + C_N + Inorganic_N +MBC_mg.kg_per_dry_wt_soil, env)[,-1]
+mod <- varpart(species, mm, inc.pcnm$vectors)
+plot(mod)
 ```
 ```{r}
 fertil.spe <- read.delim ('https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.spe.txt', row.names = 1)
