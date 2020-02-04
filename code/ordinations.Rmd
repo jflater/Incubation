@@ -90,6 +90,7 @@ day.stats <- adonis2(dist ~ treatment * day, data = data.frame(sample_data(rare)
 day.stats
 kable(day.stats, "html") %>%
     kable_styling()
+write.csv(day.stats, file = "../data/adonis2.csv")
 ```
 ```{r}
 treatment.stats <- adonis(dist ~ treatment * day, data = data.frame(sample_data(rare)))
