@@ -4,101 +4,199 @@ author: "Jared"
 date: "1/29/2020"
 output: html_document
 ---
-https://static-content.springer.com/esm/art%3A10.1038%2Fs41598-017-06693-z/MediaObjects/41598_2017_6693_MOESM1_ESM.pdf
-```{r setup, include=FALSE}
-#Code for PRC and dbPRC
-#Required packages
-library(vegan)
+```{r}
+source(file = "functions.R")
 library(phyloseq)
-library(ape)
+library(vegan) 
+library(tidyverse)
+library(ggplot2)
+library(viridis)
+```
 
+```{r setup, include=FALSE}
+inc.raw.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
 
-#Readin dataset
-meta <- data.frame(sample_data(rare)) %>%
-  select(treatment, day)
-otus <- data.frame(t(otu_table(rare)))
+inc.physeq <- subset_samples(inc.raw.physeq, day %in% c("7",
+                                                        "14",
+                                                        "21",
+                                                        "35",
+                                                        "49",
+                                                        "97"))
 
-parent <- cbind(meta, otus)
-  
-response <- parent[,3:length(parent)]
-time<-as.factor(parent[,2])
-treatment<-as.factor(parent[,1])
+#Rename treatments to more informative titles
+data <- data.frame(sample_data(inc.physeq)) %>%
+  mutate(treatment = recode(treatment,
+                            'Control' = 'Reference',
+                            'CompAlfa' = 'Mix')) %>%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) %>%
+  mutate(TreatmentAndDay = paste(treatment, day))
+data$treatment <- relevel(data$treatment, ref = "Reference") 
+data$day <- as.numeric(data$day)
+rownames(data) <- data$i_id
+data[7:15] <- data.frame(lapply(data[7:15], function(x) scale(x))) # zscore for dbRDA
+sample_data(inc.physeq) <- data
+inc.physeq
+```
+```{r}
+tree <- read_tree("../data/tree.nwk")
 
-#Set up objects and matrices
-y <-deparse(substitute(response))
-x <-deparse(substitute(treatment))
-z <-deparse(substitute(time))
+# Add the tree file to the phyloseq object
+inc_phy <- merge_phyloseq(inc.physeq, tree)
+inc <- inc_phy %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+inc
+#rarecurve(t(otu_table(inc)))
+```
 
-#Create formulas and design matrices
-fla <-as.formula(paste("~", x, "+", z))
-mf <-model.frame(fla, response, na.action = na.pass)
-fla.zx <-as.formula(paste("~", z, ":", x))
-fla.z <-as.formula(paste("~", z))
-X = model.matrix(fla.zx, mf)[, -c(seq_len(nlevels(time) + 1))]
-Z = model.matrix(fla.z, mf)[, -1]
+```{r}
+rare <- inc %>%
+  rarefy_even_depth(sample.size = 6000, rngseed = 432432) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+sample_sums(rare)
+rm(inc, inc_phy, inc.physeq, inc.raw.physeq, data, tree)
+```
+```{r}
+species <- data.frame(t(otu_table(rare)))
+                      
+env <- data.frame(sample_data(rare))
 
-#Calculation of non-distance based PRC
-#Non-distance based RDA
-RDA <-rda(response ~ X + Condition(Z))
+env <- env %>%
+  select(treatment, day, colnames(env[7:15]))
+```
+```{r}
+dist <- distance(rare, method = "unifrac", weighted = T)
+```
+```{r}
+dbrda.all <- dbrda(dist ~ ., env)
 
-#Conversion of RDA to PRC compatible format
-RDA$terminfo$xlev = list(levels(time), levels(treatment))
-names(RDA$terminfo$xlev) = c(paste(z), paste(x))
-RDA$call <-match.call()
-class(RDA) <-c("prc", class(RDA))
-plot(RDA, main = "PRC")
+anova(dbrda.all)
 
-#Store species weights
-RDA.sp<-linestack(scores(RDA, ch = 1, display = "species", scaling = 3))
-RDA.sp<-as.matrix(RDA.sp)
-row.names(RDA.sp) = rownames(scores(RDA, display = "species"))
-colnames(RDA.sp) = "Weight"
+adjR2.dbrda <- RsquareAdj(dbrda.all)$adj.r.squared 
 
-# #Calculation of Weighted UniFrac
-# #Read in the OTU community set
-# otu.table<-read.csv("PRCinput.csv", sep = ",", header = TRUE, row.names = 1)
-# otu.table<-otu.table[,3:length(otu.table)]
-# 
-# #Create phyloseq compatible OTU and taxonomy tables
-# otu.table<-t(otu.table)
-# tax.map<-read.csv("Taxmap.csv", sep = ",", header = TRUE) 
-# otu.table<-data.matrix(otu.table, rownames.force = TRUE)
-# tax.map<-as.matrix(tax.map) 
-# phyloseq.otu.table<-otu_table(otu.table, taxa_are_rows = TRUE) 
-# class(phyloseq.otu.table) 
-# class(tax.map) 
-# 
-# #Read in the phylogenetic tree matrix
-# phy.tree<-read_tree("Phylotree.txt")
-# phy.tree<-root(phy.tree,outgroup = "AKK", resolve.root = TRUE) 
-# 
-# #Specific to test dataset
-# plot(phy.tree)
-# 
-# #Merge OTU table, taxonomy map, and phylogenetic tree into phyloseq object
-# phylo.set<-merge_phyloseq(phy.tree, phyloseq.otu.table, tax.map)
+db_rda.vasc.0 <- dbrda(dist ~ 1, data = env) 
+db_rda.vasc.all <- dbrda(dist ~ ., data = env)
 
-#Calculate Weighted UniFrac distance matrix
-wUF.dm<-UniFrac(rare, weighted = TRUE, fast = TRUE)
-wUF.table<-as.matrix(dist(wUF.dm))
+sel.osR2b <- ordiR2step(db_rda.vasc.0, scope = formula(db_rda.vasc.all), R2scope = adjR2.dbrda, direction = 'both', permutations = 999)
+sel.osR2b
 
-#Save distance matrix to file
-write.table(wUF.table, file = "data/wUFdm.csv", sep = ",")
+sel.osR2b$anova
 
-#Calculation of UniFrac distance based PRC
-dbRDA <-capscale(wUF.dm ~ X + Condition(Z), data = parent[,1:2], comm = response)
+sel.osR2_adjb <- sel.osR2b
+sel.osR2_adjb$anova$`Pr(>F)` <- p.adjust(sel.osR2b$anova$`Pr(>F)`, method = 'bonferroni', n = ncol(env))
+sel.osR2_adjb$anova
+# bonferroni correction is very conservative
+```
+```{r}
+phyord <- ordinate(
+  physeq = rare, 
+  method = "dbrda",
+  distance = dist,
+  formula = ~ day + treatment + NO3 + C_N + C_flash
+)
+veganord <- dbrda(dist ~ day + treatment + NO3 + C_N + C_flash, data = env, add = T)
 
-#Conversion of dbRDA to PRC compatible format
-dbRDA$terminfo$xlev = list(levels(time), levels(treatment))
-names(dbRDA$terminfo$xlev) = c(paste(z), paste(x))
-dbRDA$call <-match.call()
-class(dbRDA) <-c("prc", class(dbRDA))
-plot(dbRDA, main = "dbPRC")
+anova.cca(cap_ord)
+anova.cca(veganord)
+```
+```{r}
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = rare,
+  ordination = veganord,
+  shape = "treatment",
+  axes = c(1,2)
+) +
+  geom_point(aes(color = day))
 
-#Store species weights
-dbRDA.sp<-linestack(scores(dbRDA, ch = 1, display = "species", scaling = 3))
-dbRDA.sp<-as.matrix(dbRDA.sp)
-row.names(dbRDA.sp) = rownames(scores(dbRDA, display = "species"))
-colnames(dbRDA.sp) = "Weight"
+# Now add the environmental variables as arrows
+#  “sites”, “species”, “wa”, “lc”, “bp”, “cn”, “reg”
+arrowmat <- scores(veganord, display = "bp")
+arrowmat
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = dbRDA1,
+                 yend = dbRDA2,
+                 x = 0,
+                 y = 0,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+label_map <- aes(x = .8 * dbRDA1,
+                 y = .8 * dbRDA2,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+ordination <- cap_plot +
+  geom_segment(
+    mapping = arrow_map,
+    size = .5,
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 2.5,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) 
+ordination
+plot <- ordination +
+  theme_my() +
+  labs(color = "Day") +
+  labs(shape = "Treatment") +
+  scale_color_viridis(discrete = T) 
+
+ggsave("../Figures/Constrained.png", plot = plot, device = "png", width = 180, height = 90, units = "mm", dpi = 500)
+```
+```{r}
+# Can only show 4 varparts
+mod <- varpart(dist, ~ day, ~ treatment, ~ NO3, ~ C_N, data = env)
+mod
+
+plot(mod, digits = 3, Xnames = c('day', 'treatment', 'NO3', 'C:N ratio'), bg = c('red', 'blue', 'green', 'orange'))
+```
+```{r}
+# day + treatment + NO3 + C_N 
+# fractions [a+b+c]:
+rda.all <- dbrda(dist ~ day + treatment + NO3 + C_N + C_flash, data = env)
+anova(rda.all)
+# fractions [a+b]:
+rda.day <- dbrda(dist ~ day, data = env)
+# fractions [b+c]:
+rda.treatment <- dbrda(dist ~ treatment, data = env)
+rda.NO3 <- dbrda(dist ~ treatment, data = env)
+rda.C_N <- dbrda(dist ~ treatment, data = env)
+```
+```{r}
+d <- as_tibble(sel.osR2_adjb$anova, rownames = "Variable") %>%
+  select(Variable, R2.adj) %>%
+  mutate(Variation = R2.adj * 100) 
+
+d
+e <- cbind(d, Explains = c(d$Variation[1], diff(as.numeric(d$Variation), lag = 1, differences = 1))) %>%
+  select(Variable, Explains)
+e
+b <- rbind(e,c("Unexplained", 100 - colSums(e[,2, drop = F])))
+b
+b$Variable <- c("Day", "Treatment", "Nitrate", "C:N", "TOC", "Others", "Unexplained")
+b
+library("janitor")
+b$Explains <- round(as.numeric(b$Explains), digits = 2)
+b$Variable <- as.factor(b$Variable)
+c <- b %>% adorn_totals("row")
+c
+write.csv(c, "../data/VarienceTable.csv") 
+```
+
+```{r}
+kable(b)
 ```
 

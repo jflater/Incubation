@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Jared" />
+
+
+<title>Incubation Ordinations</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 54px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h2 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h3 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h4 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h5 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h6 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">WORLE Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Index</a>
+</li>
+<li>
+  <a href="manure_associated.html">Manure-associated</a>
+</li>
+<li>
+  <a href="diversity.html">Diversity</a>
+</li>
+<li>
+  <a href="ordinations.html">Ordinations</a>
+</li>
+<li>
+  <a href="args.html">ARGs</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Incubation Ordinations</h1>
+<h4 class="author">Jared</h4>
+<h4 class="date">12/4/2019</h4>
+
+</div>
+
+
+<pre class="r"><code>library(phyloseq)
+library(vegan)</code></pre>
+<pre><code>## Loading required package: permute</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## This is vegan 2.5-6</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ───────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
+## ✓ tidyr   1.0.0     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(xtable)
+library(viridis)</code></pre>
+<pre><code>## Loading required package: viridisLite</code></pre>
+<pre class="r"><code>library(kableExtra)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;kableExtra&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     group_rows</code></pre>
+<pre class="r"><code>inc.raw.physeq &lt;- readRDS(&quot;../data/incubation_physeq_Aug18.RDS&quot;)
+
+inc.physeq &lt;- subset_samples(inc.raw.physeq, day %in% c(&quot;7&quot;,
+                                                        &quot;14&quot;,
+                                                        &quot;21&quot;,
+                                                        &quot;35&quot;,
+                                                        &quot;49&quot;,
+                                                        &quot;97&quot;))
+
+#Rename treatments to more informative titles
+data &lt;- data.frame(sample_data(inc.physeq)) %&gt;%
+  mutate(treatment = recode(treatment,
+                            &#39;Control&#39; = &#39;Reference&#39;,
+                            &#39;CompAlfa&#39; = &#39;Mix&#39;)) %&gt;%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) %&gt;%
+  mutate(TreatmentAndDay = paste(treatment, day))
+data$treatment &lt;- relevel(data$treatment, ref = &quot;Reference&quot;) 
+data$day &lt;- as.factor(data$day)
+rownames(data) &lt;- data$i_id
+sample_data(inc.physeq) &lt;- data
+sample_data(inc.physeq)$day &lt;- as.factor(sample_data(inc.physeq)$day)
+inc.physeq</code></pre>
+<pre><code>## phyloseq-class experiment-level object
+## otu_table()   OTU Table:         [ 43630 taxa and 288 samples ]
+## sample_data() Sample Data:       [ 288 samples by 16 sample variables ]
+## tax_table()   Taxonomy Table:    [ 43630 taxa by 6 taxonomic ranks ]</code></pre>
+<pre class="r"><code>tree &lt;- read_tree(&quot;../data/tree.nwk&quot;)
+
+# Add the tree file to the phyloseq object
+inc_phy &lt;- merge_phyloseq(inc.physeq, tree)
+inc &lt;- inc_phy %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 2, T)
+inc</code></pre>
+<pre><code>## phyloseq-class experiment-level object
+## otu_table()   OTU Table:         [ 25743 taxa and 288 samples ]
+## sample_data() Sample Data:       [ 288 samples by 16 sample variables ]
+## tax_table()   Taxonomy Table:    [ 25743 taxa by 6 taxonomic ranks ]
+## phy_tree()    Phylogenetic Tree: [ 25743 tips and 25741 internal nodes ]</code></pre>
+<pre class="r"><code>#rarecurve(t(otu_table(inc)))</code></pre>
+<pre class="r"><code>PCoA &lt;- ordinate(inc, &quot;PCoA&quot;, &quot;wunifrac&quot;)</code></pre>
+<pre><code>## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root as --
+## Otu11155 -- in the phylogenetic tree in the data you provided.</code></pre>
+<pre class="r"><code>plotpcoa &lt;- plot_ordination(inc, PCoA, color = &quot;day&quot;) + stat_ellipse(geom = &quot;polygon&quot;, type = &quot;norm&quot;, alpha = 0.2, aes(fill = day))
+plotpcoa</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>NMDS &lt;- ordinate(inc, &quot;NMDS&quot;, &quot;wunifrac&quot;)</code></pre>
+<pre><code>## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root as --
+## Otu08485 -- in the phylogenetic tree in the data you provided.</code></pre>
+<pre><code>## Run 0 stress 0.1190043 
+## Run 1 stress 0.1190047 
+## ... Procrustes: rmse 6.430391e-05  max resid 0.00105328 
+## ... Similar to previous best
+## Run 2 stress 0.1264647 
+## Run 3 stress 0.1190044 
+## ... Procrustes: rmse 4.452128e-05  max resid 0.0004885024 
+## ... Similar to previous best
+## Run 4 stress 0.1190043 
+## ... New best solution
+## ... Procrustes: rmse 3.585581e-05  max resid 0.0004624971 
+## ... Similar to previous best
+## Run 5 stress 0.1190047 
+## ... Procrustes: rmse 8.198015e-05  max resid 0.001353034 
+## ... Similar to previous best
+## Run 6 stress 0.1264427 
+## Run 7 stress 0.1264415 
+## Run 8 stress 0.1190043 
+## ... Procrustes: rmse 2.180446e-05  max resid 0.0003474876 
+## ... Similar to previous best
+## Run 9 stress 0.1190044 
+## ... Procrustes: rmse 3.806648e-05  max resid 0.0005877427 
+## ... Similar to previous best
+## Run 10 stress 0.1190043 
+## ... New best solution
+## ... Procrustes: rmse 1.448558e-05  max resid 0.0001564497 
+## ... Similar to previous best
+## Run 11 stress 0.1190043 
+## ... New best solution
+## ... Procrustes: rmse 7.477894e-06  max resid 8.656938e-05 
+## ... Similar to previous best
+## Run 12 stress 0.1264395 
+## Run 13 stress 0.1264631 
+## Run 14 stress 0.1264387 
+## Run 15 stress 0.1190048 
+## ... Procrustes: rmse 9.076295e-05  max resid 0.001495434 
+## ... Similar to previous best
+## Run 16 stress 0.1190043 
+## ... Procrustes: rmse 2.841486e-05  max resid 0.0004618702 
+## ... Similar to previous best
+## Run 17 stress 0.1190043 
+## ... Procrustes: rmse 3.269789e-05  max resid 0.0004547394 
+## ... Similar to previous best
+## Run 18 stress 0.1264366 
+## Run 19 stress 0.1264362 
+## Run 20 stress 0.1264375 
+## *** Solution reached</code></pre>
+<pre class="r"><code>plotNMDS &lt;- plot_ordination(inc, NMDS, color = &quot;day&quot;) + stat_ellipse(geom = &quot;polygon&quot;, type = &quot;norm&quot;, alpha = 0.2, aes(fill = day))
+plotNMDS</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>rare &lt;- inc %&gt;%
+  rarefy_even_depth(sample.size = 6000, rngseed = 432432)</code></pre>
+<pre><code>## `set.seed(432432)` was used to initialize repeatable random subsampling.</code></pre>
+<pre><code>## Please record this for your records so others can reproduce.</code></pre>
+<pre><code>## Try `set.seed(432432); .Random.seed` for the full vector</code></pre>
+<pre><code>## ...</code></pre>
+<pre><code>## 41 samples removedbecause they contained fewer reads than `sample.size`.</code></pre>
+<pre><code>## Up to first five removed samples are:</code></pre>
+<pre><code>## i063i068i087i092i111</code></pre>
+<pre><code>## ...</code></pre>
+<pre><code>## 5569OTUs were removed because they are no longer 
+## present in any sample after random subsampling</code></pre>
+<pre><code>## ...</code></pre>
+<pre class="r"><code>sample_sums(rare)</code></pre>
+<pre><code>## i049 i050 i051 i052 i053 i054 i055 i056 i057 i058 i059 i060 i064 i065 i066 i067 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i069 i070 i071 i072 i075 i076 i077 i078 i079 i080 i081 i082 i083 i084 i088 i089 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i090 i091 i093 i094 i095 i096 i099 i100 i101 i102 i103 i104 i105 i106 i107 i108 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i109 i110 i112 i113 i114 i115 i116 i117 i118 i119 i120 i121 i122 i123 i124 i125 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i126 i127 i128 i129 i130 i131 i132 i135 i136 i137 i138 i139 i140 i141 i142 i143 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i144 i145 i146 i147 i148 i149 i150 i151 i152 i153 i154 i155 i156 i157 i158 i159 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i160 i161 i163 i164 i165 i166 i167 i168 i170 i171 i172 i173 i174 i175 i176 i177 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i178 i179 i180 i181 i182 i183 i184 i185 i186 i187 i189 i190 i191 i192 i193 i194 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i195 i197 i198 i199 i200 i201 i202 i203 i204 i205 i206 i207 i208 i209 i210 i211 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i212 i213 i214 i215 i216 i217 i218 i221 i222 i224 i226 i227 i228 i238 i239 i240 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i241 i242 i243 i244 i245 i246 i247 i248 i249 i250 i251 i252 i253 i254 i255 i256 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i257 i258 i260 i263 i264 i265 i266 i267 i268 i269 i271 i272 i273 i274 i275 i277 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i280 i281 i282 i284 i285 i286 i289 i290 i291 i292 i293 i294 i295 i296 i297 i298 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i301 i303 i304 i305 i307 i308 i309 i310 i311 i312 i313 i315 i316 i317 i318 i319 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i320 i321 i322 i323 i324 i325 i326 i327 i328 i329 i330 i331 i332 i333 i334 i335 
+## 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 6000 
+## i336  i62  i73  i74  i86  i97  i98 
+## 6000 6000 6000 6000 6000 6000 6000</code></pre>
+<pre class="r"><code>rm(inc, inc_phy, inc.physeq, inc.raw.physeq, NMDS, tree)</code></pre>
+<pre class="r"><code>source(file = &quot;functions.R&quot;)
+NMDS &lt;- ordinate(rare, &quot;NMDS&quot;, &quot;wunifrac&quot;)</code></pre>
+<pre><code>## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root as --
+## Otu07613 -- in the phylogenetic tree in the data you provided.</code></pre>
+<pre><code>## Run 0 stress 0.1170172 
+## Run 1 stress 0.1170172 
+## ... New best solution
+## ... Procrustes: rmse 4.230678e-05  max resid 0.0006466407 
+## ... Similar to previous best
+## Run 2 stress 0.1170172 
+## ... Procrustes: rmse 1.341493e-05  max resid 0.0001744778 
+## ... Similar to previous best
+## Run 3 stress 0.1170172 
+## ... New best solution
+## ... Procrustes: rmse 8.093134e-06  max resid 0.0001114333 
+## ... Similar to previous best
+## Run 4 stress 0.126016 
+## Run 5 stress 0.1170219 
+## ... Procrustes: rmse 0.0002905467  max resid 0.003634378 
+## ... Similar to previous best
+## Run 6 stress 0.1170172 
+## ... Procrustes: rmse 1.183619e-05  max resid 0.0001582325 
+## ... Similar to previous best
+## Run 7 stress 0.1170206 
+## ... Procrustes: rmse 0.0002605653  max resid 0.003675671 
+## ... Similar to previous best
+## Run 8 stress 0.1170206 
+## ... Procrustes: rmse 0.0002595625  max resid 0.003669623 
+## ... Similar to previous best
+## Run 9 stress 0.1170172 
+## ... Procrustes: rmse 2.878284e-05  max resid 0.0004300151 
+## ... Similar to previous best
+## Run 10 stress 0.1170172 
+## ... Procrustes: rmse 3.350493e-05  max resid 0.0005097563 
+## ... Similar to previous best
+## Run 11 stress 0.1170174 
+## ... Procrustes: rmse 5.897523e-05  max resid 0.0008976061 
+## ... Similar to previous best
+## Run 12 stress 0.117021 
+## ... Procrustes: rmse 0.000267305  max resid 0.003654904 
+## ... Similar to previous best
+## Run 13 stress 0.1170174 
+## ... Procrustes: rmse 4.967763e-05  max resid 0.0007476279 
+## ... Similar to previous best
+## Run 14 stress 0.1170172 
+## ... Procrustes: rmse 9.499582e-06  max resid 9.715613e-05 
+## ... Similar to previous best
+## Run 15 stress 0.1170172 
+## ... Procrustes: rmse 3.653993e-05  max resid 0.0005577157 
+## ... Similar to previous best
+## Run 16 stress 0.1170207 
+## ... Procrustes: rmse 0.0002599512  max resid 0.003669788 
+## ... Similar to previous best
+## Run 17 stress 0.1170207 
+## ... Procrustes: rmse 0.000261524  max resid 0.003664107 
+## ... Similar to previous best
+## Run 18 stress 0.1170206 
+## ... Procrustes: rmse 0.0002593862  max resid 0.003677209 
+## ... Similar to previous best
+## Run 19 stress 0.1170172 
+## ... Procrustes: rmse 1.752141e-05  max resid 0.0002066354 
+## ... Similar to previous best
+## Run 20 stress 0.1260212 
+## *** Solution reached</code></pre>
+<pre class="r"><code>plot_ordination(rare, NMDS, color = &quot;day&quot;) + stat_ellipse(geom = &quot;polygon&quot;, type = &quot;norm&quot;, alpha = 0.2, aes(fill = day))</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>plot &lt;- plot_ordination(rare, NMDS, color = &quot;day&quot;) + stat_ellipse(geom = &quot;polygon&quot;, type = &quot;norm&quot;, alpha = 0.2, aes(color = day)) +
+  theme_my() +
+  labs(color = &quot;Day&quot;) +
+  scale_color_viridis(discrete = T) 
+plot</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/Fig_5.png&quot;, plot = plot, device = &quot;png&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)
+
+plot &lt;- plot_ordination(rare, NMDS, color = &quot;treatment&quot;) + stat_ellipse(geom = &quot;polygon&quot;, type = &quot;norm&quot;, alpha = 0.2, aes(color = treatment)) +
+  theme_my() +
+  labs(color = &quot;Treatment&quot;) +
+  scale_color_viridis(discrete = T) 
+plot</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-7-3.png" width="672" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/Fig_S5.png&quot;, plot = plot, device = &quot;png&quot;, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
+<div id="adonis-results" class="section level1">
+<h1>Adonis results</h1>
+<pre class="r"><code>dist &lt;- phyloseq::distance(rare, method = &quot;wunifrac&quot;)</code></pre>
+<pre><code>## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root as --
+## Otu10042 -- in the phylogenetic tree in the data you provided.</code></pre>
+<pre class="r"><code>day.stats &lt;- adonis2(dist ~ treatment * day, data = data.frame(sample_data(rare)))
+day.stats</code></pre>
+<pre><code>## Permutation test for adonis under reduced model
+## Terms added sequentially (first to last)
+## Permutation: free
+## Number of permutations: 999
+## 
+## adonis2(formula = dist ~ treatment * day, data = data.frame(sample_data(rare)))
+##                Df SumOfSqs      R2       F Pr(&gt;F)    
+## treatment       3  0.28248 0.15588 26.5117  0.001 ***
+## day             5  0.62064 0.34247 34.9488  0.001 ***
+## treatment:day  15  0.11709 0.06461  2.1977  0.001 ***
+## Residual      223  0.79203 0.43704                   
+## Total         246  1.81223 1.00000                   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>kable(day.stats, &quot;html&quot;) %&gt;%
+    kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Df
+</th>
+<th style="text-align:right;">
+SumOfSqs
+</th>
+<th style="text-align:right;">
+R2
+</th>
+<th style="text-align:right;">
+F
+</th>
+<th style="text-align:right;">
+Pr(&gt;F)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+treatment
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.2824839
+</td>
+<td style="text-align:right;">
+0.1558762
+</td>
+<td style="text-align:right;">
+26.511674
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+day
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+0.6206361
+</td>
+<td style="text-align:right;">
+0.3424704
+</td>
+<td style="text-align:right;">
+34.948763
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatment:day
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+0.1170855
+</td>
+<td style="text-align:right;">
+0.0646084
+</td>
+<td style="text-align:right;">
+2.197742
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residual
+</td>
+<td style="text-align:right;">
+223
+</td>
+<td style="text-align:right;">
+0.7920272
+</td>
+<td style="text-align:right;">
+0.4370450
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total
+</td>
+<td style="text-align:right;">
+246
+</td>
+<td style="text-align:right;">
+1.8122328
+</td>
+<td style="text-align:right;">
+1.0000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>treatment.stats &lt;- adonis(dist ~ treatment * day, data = data.frame(sample_data(rare)))
+kable(treatment.stats$aov.tab, &quot;html&quot;) %&gt;%
+    kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Df
+</th>
+<th style="text-align:right;">
+SumsOfSqs
+</th>
+<th style="text-align:right;">
+MeanSqs
+</th>
+<th style="text-align:right;">
+F.Model
+</th>
+<th style="text-align:right;">
+R2
+</th>
+<th style="text-align:right;">
+Pr(&gt;F)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+treatment
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.2824839
+</td>
+<td style="text-align:right;">
+0.0941613
+</td>
+<td style="text-align:right;">
+26.511674
+</td>
+<td style="text-align:right;">
+0.1558762
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+day
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+0.6206361
+</td>
+<td style="text-align:right;">
+0.1241272
+</td>
+<td style="text-align:right;">
+34.948763
+</td>
+<td style="text-align:right;">
+0.3424704
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+treatment:day
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+0.1170855
+</td>
+<td style="text-align:right;">
+0.0078057
+</td>
+<td style="text-align:right;">
+2.197742
+</td>
+<td style="text-align:right;">
+0.0646084
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Residuals
+</td>
+<td style="text-align:right;">
+223
+</td>
+<td style="text-align:right;">
+0.7920272
+</td>
+<td style="text-align:right;">
+0.0035517
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+0.4370450
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total
+</td>
+<td style="text-align:right;">
+246
+</td>
+<td style="text-align:right;">
+1.8122328
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1.0000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca" class="uri">https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca</a> # Variable selection for constrained ordination</p>
+<pre class="r"><code>species &lt;- data.frame(t(otu_table(rare)))
+                      
+env &lt;- data.frame(sample_data(rare))
+
+env &lt;- env %&gt;%
+  select(treatment, day, pH, C_N, Inorganic_N, MBC_mg.kg_per_dry_wt_soil)</code></pre>
+<pre class="r"><code># rda
+#tb_rda.all &lt;- rda(species ~ ., env)
+# try dbrda
+dbrda.all &lt;- dbrda(dist ~ ., env)
+
+#anova(tb_rda.all)
+anova(dbrda.all)</code></pre>
+<pre><code>## Permutation test for dbrda under reduced model
+## Permutation: free
+## Number of permutations: 999
+## 
+## Model: dbrda(formula = dist ~ treatment + day + pH + C_N + Inorganic_N + MBC_mg.kg_per_dry_wt_soil, data = env)
+##           Df SumOfSqs      F Pr(&gt;F)    
+## Model     12  0.95394 21.673  0.001 ***
+## Residual 234  0.85829                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#adjR2.tbrda &lt;- RsquareAdj(tb_rda.all)$adj.r.squared 
+adjR2.dbrda &lt;- RsquareAdj(dbrda.all)$adj.r.squared 
+
+#tb_rda.vasc.0 &lt;- rda(species ~ 1, data = env) 
+#tb_rda.vasc.all &lt;- rda(species ~ ., data = env)
+db_rda.vasc.0 &lt;- dbrda(dist ~ 1, data = env) 
+db_rda.vasc.all &lt;- dbrda(dist ~ ., data = env)
+
+#sel.osR2 &lt;- ordiR2step(tb_rda.vasc.0, scope = formula(tb_rda.vasc.all), R2scope = adjR2.tbrda, direction = &#39;forward&#39;, permutations = 999)
+#sel.osR2
+sel.osR2b &lt;- ordiR2step(db_rda.vasc.0, scope = formula(db_rda.vasc.all), R2scope = adjR2.dbrda, direction = &#39;both&#39;, permutations = 999)</code></pre>
+<pre><code>## Step: R2.adj= 0 
+## Call: dist ~ 1 
+##  
+##                             R2.adjusted
+## &lt;All variables&gt;              0.50210372
+## + day                        0.32903732
+## + treatment                  0.14545487
+## + pH                         0.11392852
+## + Inorganic_N                0.08796664
+## + MBC_mg.kg_per_dry_wt_soil  0.06679217
+## + C_N                        0.05575488
+## &lt;none&gt;                       0.00000000
+## 
+##       Df    AIC      F Pr(&gt;F)    
+## + day  5 54.219 25.128  0.001 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Step: R2.adj= 0.3290373 
+## Call: dist ~ day 
+##  
+##                             R2.adjusted
+## &lt;All variables&gt;               0.5021037
+## + treatment                   0.4814843
+## + MBC_mg.kg_per_dry_wt_soil   0.4028120
+## + Inorganic_N                 0.3695064
+## + C_N                         0.3668691
+## + pH                          0.3591202
+## &lt;none&gt;                        0.3290373
+## 
+##             Df     AIC      F Pr(&gt;F)    
+## + treatment  3 -6.5377 24.619  0.001 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Step: R2.adj= 0.4814843 
+## Call: dist ~ day + treatment 
+##  
+##                             R2.adjusted
+## &lt;All variables&gt;               0.5021037
+## + Inorganic_N                 0.4946367
+## + MBC_mg.kg_per_dry_wt_soil   0.4910780
+## + C_N                         0.4876437
+## + pH                          0.4832758
+## &lt;none&gt;                        0.4814843
+## 
+##               Df     AIC      F Pr(&gt;F)    
+## + Inorganic_N  1 -11.924 7.1941  0.001 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Step: R2.adj= 0.4946367 
+## Call: dist ~ day + treatment + Inorganic_N 
+##  
+##                             R2.adjusted
+## &lt;All variables&gt;               0.5021037
+## + C_N                         0.4999293
+## + MBC_mg.kg_per_dry_wt_soil   0.4963175
+## + pH                          0.4954533
+## &lt;none&gt;                        0.4946367
+## 
+##       Df     AIC      F Pr(&gt;F)   
+## + C_N  1 -13.569 3.5084  0.003 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Step: R2.adj= 0.4999293 
+## Call: dist ~ day + treatment + Inorganic_N + C_N 
+##  
+##                             R2.adjusted
+## &lt;All variables&gt;               0.5021037
+## + MBC_mg.kg_per_dry_wt_soil   0.5016474
+## + pH                          0.5005060
+## &lt;none&gt;                        0.4999293
+## 
+##                             Df     AIC      F Pr(&gt;F)  
+## + MBC_mg.kg_per_dry_wt_soil  1 -13.468 1.8136  0.071 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>sel.osR2b</code></pre>
+<pre><code>## Call: dbrda(formula = dist ~ day + treatment + Inorganic_N + C_N, data
+## = env)
+## 
+##               Inertia Proportion Rank RealDims
+## Total          1.8122     1.0000              
+## Constrained    0.9428     0.5203   10       10
+## Unconstrained  0.8694     0.4797  236      179
+## Inertia is squared Unknown distance 
+## 
+## Eigenvalues for constrained axes:
+##  dbRDA1  dbRDA2  dbRDA3  dbRDA4  dbRDA5  dbRDA6  dbRDA7  dbRDA8  dbRDA9 dbRDA10 
+##  0.5385  0.1889  0.0849  0.0610  0.0252  0.0159  0.0106  0.0074  0.0067  0.0038 
+## 
+## Eigenvalues for unconstrained axes:
+##    MDS1    MDS2    MDS3    MDS4    MDS5    MDS6    MDS7    MDS8 
+## 0.29494 0.04494 0.03696 0.03199 0.02627 0.02501 0.01975 0.01780 
+## (Showing 8 of 236 unconstrained eigenvalues)</code></pre>
+<pre class="r"><code>#sel.osR2$anova
+sel.osR2b$anova</code></pre>
+<pre><code>##                  R2.adj Df     AIC       F Pr(&gt;F)    
+## + day           0.32904  5  54.219 25.1275  0.001 ***
+## + treatment     0.48148  3  -6.538 24.6185  0.001 ***
+## + Inorganic_N   0.49464  1 -11.924  7.1941  0.001 ***
+## + C_N           0.49993  1 -13.569  3.5084  0.003 ** 
+## &lt;All variables&gt; 0.50210                              
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#sel.osR2_adj &lt;- sel.osR2
+sel.osR2_adjb &lt;- sel.osR2b
+#sel.osR2_adj$anova$`Pr(&gt;F)` &lt;- p.adjust(sel.osR2$anova$`Pr(&gt;F)`, method = &#39;holm&#39;, n = ncol(env))
+sel.osR2_adjb$anova$`Pr(&gt;F)` &lt;- p.adjust(sel.osR2b$anova$`Pr(&gt;F)`, method = &#39;holm&#39;, n = ncol(env))
+#sel.osR2_adj$anova
+sel.osR2_adjb$anova</code></pre>
+<pre><code>##                  R2.adj Df     AIC       F Pr(&gt;F)   
+## + day           0.32904  5  54.219 25.1275  0.006 **
+## + treatment     0.48148  3  -6.538 24.6185  0.006 **
+## + Inorganic_N   0.49464  1 -11.924  7.1941  0.006 **
+## + C_N           0.49993  1 -13.569  3.5084  0.009 **
+## &lt;All variables&gt; 0.50210                             
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>rare@sam_data$day &lt;- as.integer(rare@sam_data$day)
+rare@sam_data$day &lt;- as.factor(rare@sam_data$treatment)
+class(rare@sam_data$day)</code></pre>
+<pre><code>## [1] &quot;factor&quot;</code></pre>
+<pre class="r"><code>class(rare@sam_data$Inorganic_N)</code></pre>
+<pre><code>## [1] &quot;numeric&quot;</code></pre>
+<pre class="r"><code>cap_ord &lt;- ordinate(
+  physeq = rare, 
+  method = &quot;CAP&quot;,
+  distance = dist,
+  formula = ~ day * treatment + Inorganic_N + C_N
+)
+anova_cca &lt;- anova.cca(cap_ord, by = &quot;margin&quot;)
+
+
+# CAP plot
+cap_plot &lt;- plot_ordination(
+  physeq = rare,
+  ordination = cap_ord,
+  color = &quot;treatment&quot;,
+  axes = c(1,2)
+) +
+  geom_point(aes(colour = treatment), alpha = 0.8, size = 4) 
+
+# Now add the environmental variables as arrows
+arrowmat &lt;- vegan::scores(cap_ord, display = &quot;bp&quot;)
+
+# Add labels, make a data.frame
+arrowdf &lt;- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map &lt;- aes(xend = CAP1,
+                 yend = CAP2,
+                 x = 0,
+                 y = 0,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+label_map &lt;- aes(x = .8 * CAP1,
+                 y = .8 * CAP2,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, &quot;npc&quot;))
+
+# Make a new graphic
+ordination &lt;- cap_plot +
+  geom_segment(
+    mapping = arrow_map,
+    size = .5,
+    data = arrowdf, 
+    color = &quot;gray&quot;, 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) +
+  ggtitle(&quot;RENAME&quot;)</code></pre>
+<pre><code>## Warning: Ignoring unknown aesthetics: label</code></pre>
+<pre class="r"><code>ordination</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>anova_cca</code></pre>
+<pre><code>## Permutation test for capscale under reduced model
+## Marginal effects of terms
+## Permutation: free
+## Number of permutations: 999
+## 
+## Model: capscale(formula = distance ~ day * treatment + Inorganic_N + C_N, data = data)
+##                Df SumOfSqs      F Pr(&gt;F)    
+## Inorganic_N     1  0.08138 17.294  0.001 ***
+## C_N             1  0.10544 22.407  0.001 ***
+## day:treatment   0  0.00000    Inf           
+## Residual      241  1.13409                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>inc.pcnm &lt;- pcnm(dist)
+mod &lt;- varpart(species, ~ ., inc.pcnm$vectors, data = env)
+
+mm &lt;- model.matrix( ~ treatment * day + Inorganic_N + C_N, env)[,-1]
+mod &lt;- varpart(species, mm, inc.pcnm$vectors)
+plot(mod)</code></pre>
+<p><img src="ordinations_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+<pre class="r"><code>fertil.spe &lt;- read.delim (&#39;https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.spe.txt&#39;, row.names = 1)
+fertil.env &lt;- read.delim (&#39;https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.env.txt&#39;, row.names = 1)</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -33,8 +33,8 @@ data <- data.frame(sample_data(inc.physeq)) %>%
 data$treatment <- relevel(data$treatment, ref = "Reference") 
 data$day <- as.factor(data$day)
 rownames(data) <- data$i_id
+data[7:13] <- data.frame(lapply(data[7:13], function(x) scale(x))) # zscore for dbRDA
 sample_data(inc.physeq) <- data
-sample_data(inc.physeq)$day <- as.factor(sample_data(inc.physeq)$day)
 inc.physeq
 ```
 ```{r}
@@ -74,148 +74,25 @@ plot <- plot_ordination(rare, NMDS, color = "day") + stat_ellipse(geom = "polygo
   labs(color = "Day") +
   scale_color_viridis(discrete = T) 
 plot
-ggsave("../Figures/Fig_4.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/Fig_5.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
 
 plot <- plot_ordination(rare, NMDS, color = "treatment") + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.2, aes(color = treatment)) +
   theme_my() +
   labs(color = "Treatment") +
   scale_color_viridis(discrete = T) 
 plot
-ggsave("../Figures/Fig_5.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/Fig_S5.png", plot = plot, device = "png", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 # Adonis results
 ```{r}
 dist <- phyloseq::distance(rare, method = "wunifrac")
-day.stats <- adonis2(dist ~ treatment + day, data = data.frame(sample_data(rare)))
+day.stats <- adonis2(dist ~ treatment * day, data = data.frame(sample_data(rare)))
 day.stats
 kable(day.stats, "html") %>%
     kable_styling()
 ```
 ```{r}
-treatment.stats <- adonis(dist ~ treatment + day, data = data.frame(sample_data(rare)))
+treatment.stats <- adonis(dist ~ treatment * day, data = data.frame(sample_data(rare)))
 kable(treatment.stats$aov.tab, "html") %>%
     kable_styling()
 ```
-https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca
-# Variable selection for constrained ordination
-```{r}
-species <- data.frame(t(otu_table(rare)))
-                      
-env <- data.frame(sample_data(rare))
-
-env <- env %>%
-  select(treatment, day, pH, C_N, Inorganic_N, MBC_mg.kg_per_dry_wt_soil)
-```
-```{r}
-# rda
-#tb_rda.all <- rda(species ~ ., env)
-# try dbrda
-dbrda.all <- dbrda(dist ~ ., env)
-
-#anova(tb_rda.all)
-anova(dbrda.all)
-
-#adjR2.tbrda <- RsquareAdj(tb_rda.all)$adj.r.squared 
-adjR2.dbrda <- RsquareAdj(dbrda.all)$adj.r.squared 
-
-#tb_rda.vasc.0 <- rda(species ~ 1, data = env) 
-#tb_rda.vasc.all <- rda(species ~ ., data = env)
-db_rda.vasc.0 <- dbrda(dist ~ 1, data = env) 
-db_rda.vasc.all <- dbrda(dist ~ ., data = env)
-
-#sel.osR2 <- ordiR2step(tb_rda.vasc.0, scope = formula(tb_rda.vasc.all), R2scope = adjR2.tbrda, direction = 'forward', permutations = 999)
-#sel.osR2
-sel.osR2b <- ordiR2step(db_rda.vasc.0, scope = formula(db_rda.vasc.all), R2scope = adjR2.dbrda, direction = 'both', permutations = 999)
-sel.osR2b
-
-#sel.osR2$anova
-sel.osR2b$anova
-
-#sel.osR2_adj <- sel.osR2
-sel.osR2_adjb <- sel.osR2b
-#sel.osR2_adj$anova$`Pr(>F)` <- p.adjust(sel.osR2$anova$`Pr(>F)`, method = 'holm', n = ncol(env))
-sel.osR2_adjb$anova$`Pr(>F)` <- p.adjust(sel.osR2b$anova$`Pr(>F)`, method = 'holm', n = ncol(env))
-#sel.osR2_adj$anova
-sel.osR2_adjb$anova
-```
-
-```{r}
-rare@sam_data$day <- as.numeric(rare@sam_data$day)
-rare@sam_data$day <- as.numeric(rare@sam_data$treatment)
-class(rare@sam_data$day)
-class(rare@sam_data$Inorganic_N)
-
-cap_ord <- ordinate(
-  physeq = rare, 
-  method = "CAP",
-  distance = dist,
-  formula = ~ day + treatment 
-)
-anova_cca <- anova.cca(cap_ord, by = "margin")
-
-
-# CAP plot
-cap_plot <- plot_ordination(
-  physeq = rare,
-  ordination = cap_ord,
-  color = "treatment",
-  axes = c(1,2)
-) +
-  geom_point(aes(colour = treatment), alpha = 0.8, size = 4) 
-
-# Now add the environmental variables as arrows
-arrowmat <- vegan::scores(cap_ord, display = "bp")
-
-# Add labels, make a data.frame
-arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
-
-# Define the arrow aesthetic mapping
-arrow_map <- aes(xend = CAP1,
-                 yend = CAP2,
-                 x = 0,
-                 y = 0,
-                 shape = NULL,
-                 color = NULL,
-                 label = labels)
-
-label_map <- aes(x = .8 * CAP1,
-                 y = .8 * CAP2,
-                 shape = NULL,
-                 color = NULL,
-                 label = labels)
-
-arrowhead = arrow(length = unit(0.02, "npc"))
-
-# Make a new graphic
-ordination <- cap_plot +
-  geom_segment(
-    mapping = arrow_map,
-    size = .5,
-    data = arrowdf, 
-    color = "gray", 
-    arrow = arrowhead
-  ) + 
-  geom_text(
-    mapping = label_map, 
-    size = 4,  
-    data = arrowdf, 
-    show.legend = FALSE
-  ) +
-  ggtitle("RENAME")
-ordination
-anova_cca
-
-new_dist <- phyloseq::distance(rare, method = "wunifrac")
-inc.pcnm <- pcnm(new_dist)
-mod <- varpart(species, ~ ., inc.pcnm$vectors, data = env)
-showvarparts(2, bg = c("hotpink","skyblue"))
-plot(mod, bg = c("hotpink","skyblue"))
-mm <- model.matrix(~ treatment + day + pH + C_N + Inorganic_N +MBC_mg.kg_per_dry_wt_soil, env)[,-1]
-mod <- varpart(species, mm, inc.pcnm$vectors)
-plot(mod)
-```
-```{r}
-fertil.spe <- read.delim ('https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.spe.txt', row.names = 1)
-fertil.env <- read.delim ('https://raw.githubusercontent.com/zdealveindy/anadat-r/master/data/fertil.env.txt', row.names = 1)
-```
-
