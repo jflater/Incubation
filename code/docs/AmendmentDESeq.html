@@ -395,10 +395,32 @@ div.tocify {
 
 
 <pre class="r"><code>knitr::opts_knit$set(root.dir = normalizePath(&quot;.&quot;))</code></pre>
-<p>#```{r, cache=TRUE} if (!requireNamespace(“BiocManager”, quietly = TRUE)) install.packages(“BiocManager”)</p>
-<p>BiocManager::install(c(“phyloseq”, “DESeq2”)) #```</p>
-<pre class="r"><code>inc.physeq &lt;- readRDS(&quot;../data/not.rare.nounclass&quot;)
+<pre class="r"><code>inc.physeq &lt;- readRDS(&quot;../data/incubation_physeq_Aug18.RDS&quot;)
 source(&quot;../code/functions.R&quot;)</code></pre>
+<pre class="r"><code>data &lt;- data.frame(sample_data(inc.physeq)) %&gt;%
+  mutate(treatment = recode(treatment,
+                            &#39;Control&#39; = &#39;Reference&#39;,
+                            &#39;CompAlfa&#39; = &#39;Mix&#39;)) %&gt;%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) %&gt;%
+  mutate(TreatmentAndDay = paste(treatment, day))
+
+rownames(data) &lt;- data$i_id
+sample_data(inc.physeq) &lt;- data
+sample_data(inc.physeq)$day &lt;- as.factor(sample_data(inc.physeq)$day)
+
+inc.physeq.data &lt;- data.frame(sample_data(inc.physeq))
+inc.physeq.data$response.group[inc.physeq.data$day == &quot;0&quot;] &lt;-
+  &quot;baseline&quot;
+inc.physeq.data$response.group[inc.physeq.data$day %in% c(&quot;7&quot;, &quot;14&quot;, &quot;21&quot;)] &lt;-
+  &quot;early&quot;
+inc.physeq.data$response.group[inc.physeq.data$day %in% c(&quot;35&quot;, &quot;49&quot;, &quot;97&quot;)] &lt;-
+  &quot;late&quot;
+
+inc.physeq.data &lt;- inc.physeq.data %&gt;%
+  mutate(Treatment_Response = paste(treatment, response.group, sep = &#39;_&#39;))
+
+rownames(inc.physeq.data) &lt;- inc.physeq.data$i_id
+sample_data(inc.physeq) &lt;- inc.physeq.data</code></pre>
 <div id="alfalfa-responders" class="section level1">
 <h1>Alfalfa Responders</h1>
 <div id="early" class="section level2">
@@ -414,16 +436,17 @@ log.plot.early.alf &lt;- alf.early %&gt;%
   phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
   DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;) %&gt;%
   who_diff_day(&quot;Alfalfa_early&quot;, &quot;Reference_early&quot;, alf.early) %&gt;%
-  log_plot(&quot;Alfalfa OTUS in early group that are significantly changing compared to reference early&quot;)
+  log_plot(&quot;Alfalfa OTUS in early group that are significantly more \n abundant compared to reference early (LFC &gt; 2)&quot;)
 
 # Add colum to data indicating treatment
 log.plot.early.alf.data &lt;- log.plot.early.alf$data %&gt;%
   mutate(trt = c(&quot;Alfalfa_early&quot;))
 
 # print plot with viridis color 
-log.plot.early.alf + scale_colour_viridis_d(option = &quot;plasma&quot;) +
-  theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-3-1.png" width="816" /></p>
+p &lt;- log.plot.early.alf + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_my()
+
+ggsave(&quot;../Figures/LFC2ALFEARLY.png&quot;, plot = p, width = 180, height = 200, units = &quot;mm&quot;, dpi = 500)</code></pre>
 </div>
 <div id="late" class="section level2">
 <h2>Late</h2>
@@ -443,9 +466,11 @@ log.plot.late.alf.data &lt;- log.plot.late.alf$data %&gt;%
   mutate(trt = c(&quot;Alfalfa_late&quot;))
 
 # print plot with viridis color 
-log.plot.late.alf + scale_colour_viridis_d(option = &quot;plasma&quot;) +
-  theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-4-1.png" width="816" /></p>
+p &lt;- log.plot.late.alf + scale_colour_viridis_d(option = &quot;plasma&quot;) +
+  theme_my()
+p</code></pre>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-5-1.png" width="816" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/LFC2ALFLATE.png&quot;, plot = p, width = 180, height = 200, units = &quot;mm&quot;, dpi = 500)</code></pre>
 <pre class="r"><code># Common to both early and late with LFC &gt;=4
 otustokeep &lt;- intersect(log.plot.early.alf.data$OTU, log.plot.late.alf.data$OTU)
 
@@ -479,28 +504,321 @@ all_alf &lt;- full_join(early_alf_OTUS, late_alf_OTUS)</code></pre>
 
 p + scale_colour_viridis_d(option = &quot;plasma&quot;) +
   theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-6-1.png" width="100%" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-7-1.png" width="100%" /></p>
 <pre class="r"><code># Save this list of alfalfa LFC &gt; 2 for more plots
 # Use all_alf
 saveRDS(all_alf, file = &quot;../data/LFC_alf_OTUs.RDS&quot;)
 
-png(&quot;../Figures/early_late_alf_responders.png&quot;,height=5,width=8,units=&#39;in&#39;,res=300)
-p + scale_colour_viridis_d(option = &quot;viridis&quot;) +
-  theme_bw() +
+
+p &lt;- p + scale_colour_viridis_d(option = &quot;viridis&quot;) +
+  theme_my() +
   theme(legend.position = &quot;none&quot;)
-dev.off()</code></pre>
-<pre><code>## png 
-##   2</code></pre>
+ggsave(&quot;../Figures/LFC4ALFBOTH.png&quot;, plot = p, width = 90, height = 90, units = &quot;mm&quot;, dpi = 500)</code></pre>
 </div>
 <div id="plot-a-table-of-the-alfalfa-otus-with-taxonomy" class="section level2">
 <h2>Plot a table of the Alfalfa OTUs with taxonomy</h2>
-<p>These OTUs had response greater than 2 in both early and late alfalfa</p>
+<p>These OTUs had response greater than 4 in both early and late alfalfa</p>
 <pre class="r"><code>OTUs &lt;- all_alf %&gt;%
   filter(Alfalfa_early_log2FoldChange &gt; 2 &amp; Alfalfa_late_log2FoldChange &gt; 2)
 write.table(OTUs, file = &quot;../Figures/alf_responders.txt&quot;, sep = &quot;,&quot;, quote = F, row.names = F)
 table &lt;- kable(OTUs) %&gt;%
   kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
-  scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)</code></pre>
+  scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)
+table</code></pre>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+OTU
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Phylum
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Class
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Order
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Family
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Genus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Alfalfa_early_log2FoldChange
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Alfalfa_late_log2FoldChange
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Otu00064
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria
+</td>
+<td style="text-align:left;">
+Pseudomonadales
+</td>
+<td style="text-align:left;">
+Pseudomonadaceae
+</td>
+<td style="text-align:left;">
+Pseudomonas
+</td>
+<td style="text-align:right;">
+5.607815
+</td>
+<td style="text-align:right;">
+4.949407
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00494
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria
+</td>
+<td style="text-align:left;">
+Pseudomonadales
+</td>
+<td style="text-align:left;">
+Pseudomonadaceae
+</td>
+<td style="text-align:left;">
+Pseudomonas
+</td>
+<td style="text-align:right;">
+5.940114
+</td>
+<td style="text-align:right;">
+4.051312
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00614
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Gammaproteobacteria
+</td>
+<td style="text-align:left;">
+Enterobacteriales
+</td>
+<td style="text-align:left;">
+Enterobacteriaceae
+</td>
+<td style="text-align:left;">
+Enterobacteriaceae_unclassified
+</td>
+<td style="text-align:right;">
+6.023877
+</td>
+<td style="text-align:right;">
+4.149035
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00666
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Deltaproteobacteria
+</td>
+<td style="text-align:left;">
+Bdellovibrionales
+</td>
+<td style="text-align:left;">
+Bdellovibrionaceae
+</td>
+<td style="text-align:left;">
+Bdellovibrio
+</td>
+<td style="text-align:right;">
+5.174459
+</td>
+<td style="text-align:right;">
+4.280268
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00808
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+<td style="text-align:left;">
+Bacilli
+</td>
+<td style="text-align:left;">
+Bacillales
+</td>
+<td style="text-align:left;">
+Paenibacillaceae_1
+</td>
+<td style="text-align:left;">
+Paenibacillus
+</td>
+<td style="text-align:right;">
+4.637617
+</td>
+<td style="text-align:right;">
+5.316243
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00832
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+<td style="text-align:left;">
+Bacilli
+</td>
+<td style="text-align:left;">
+Bacillales
+</td>
+<td style="text-align:left;">
+Paenibacillaceae_1
+</td>
+<td style="text-align:left;">
+Brevibacillus
+</td>
+<td style="text-align:right;">
+5.307862
+</td>
+<td style="text-align:right;">
+6.497185
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00847
+</td>
+<td style="text-align:left;">
+Planctomycetes
+</td>
+<td style="text-align:left;">
+Planctomycetia
+</td>
+<td style="text-align:left;">
+Planctomycetales
+</td>
+<td style="text-align:left;">
+Planctomycetaceae
+</td>
+<td style="text-align:left;">
+Planctomycetaceae_unclassified
+</td>
+<td style="text-align:right;">
+4.341184
+</td>
+<td style="text-align:right;">
+4.855624
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00953
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+<td style="text-align:left;">
+Bacilli
+</td>
+<td style="text-align:left;">
+Bacillales
+</td>
+<td style="text-align:left;">
+Alicyclobacillaceae
+</td>
+<td style="text-align:left;">
+Tumebacillus
+</td>
+<td style="text-align:right;">
+4.491668
+</td>
+<td style="text-align:right;">
+4.381291
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu01203
+</td>
+<td style="text-align:left;">
+Proteobacteria
+</td>
+<td style="text-align:left;">
+Deltaproteobacteria
+</td>
+<td style="text-align:left;">
+Myxococcales
+</td>
+<td style="text-align:left;">
+Polyangiaceae
+</td>
+<td style="text-align:left;">
+Byssovorax
+</td>
+<td style="text-align:right;">
+4.347646
+</td>
+<td style="text-align:right;">
+5.064442
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu01743
+</td>
+<td style="text-align:left;">
+Firmicutes
+</td>
+<td style="text-align:left;">
+Bacilli
+</td>
+<td style="text-align:left;">
+Bacillales
+</td>
+<td style="text-align:left;">
+Alicyclobacillaceae
+</td>
+<td style="text-align:left;">
+Tumebacillus
+</td>
+<td style="text-align:right;">
+4.024826
+</td>
+<td style="text-align:right;">
+4.377167
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div id="two-otus-in-the-top-10-of-alfalfa-responders-were-from-the-genus-pseudomonas" class="section level3">
 <h3>Two Otus in the top 10 of alfalfa responders were from the Genus Pseudomonas</h3>
 <p>BLASTn results for these two Otu00064 and Otu00494 were most similar to sequences from Pseudomonas fulva and Pseudomonas putida, both members of the Pseudomonas putida group</p>
@@ -514,17 +832,17 @@ late &lt;- alf.late %&gt;%
   phyloseq_to_deseq2( ~ Treatment_Response) %&gt;%
   DESeq(test = &quot;Wald&quot;, fitType = &quot;local&quot;)
 plotCounts(early, gene = c(&quot;Otu00064&quot;), intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-8-1.png" width="816" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-9-1.png" width="816" /></p>
 <pre class="r"><code>plotCounts(early, gene = c(&quot;Otu00494&quot;), intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-8-2.png" width="816" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-9-2.png" width="816" /></p>
 <pre class="r"><code>#Use above line to check if an OTU is increasing or decreasing depending on order of contrast, replace with OTU of interest, run the phyloseq to desey in #other areas to check compost or mix. </code></pre>
 </div>
 <div id="plot-counts-of-interesting-otu00064-and-otu00494-late" class="section level3">
 <h3>Plot counts of interesting Otu00064 and Otu00494 late</h3>
 <pre class="r"><code>plotCounts(late, gene = &quot;Otu00064&quot;, intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-9-1.png" width="816" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-10-1.png" width="816" /></p>
 <pre class="r"><code>plotCounts(late, gene = &quot;Otu00494&quot;, intgroup = c(&quot;Treatment_Response&quot;))</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-9-2.png" width="816" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-10-2.png" width="816" /></p>
 </div>
 </div>
 </div>
@@ -549,9 +867,10 @@ log.plot.early.comp.data &lt;- log.plot.early.comp$data %&gt;%
   mutate(trt = c(&quot;Compost_early&quot;))
 
 # print plot with viridis color 
-log.plot.early.comp + scale_colour_viridis_d(option = &quot;plasma&quot;) +
-  theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-10-1.png" width="816" /></p>
+p &lt;- log.plot.early.comp + scale_colour_viridis_d(option = &quot;viridis&quot;) +
+  theme_my() +
+  theme(legend.position = &quot;none&quot;)
+ggsave(&quot;../Figures/LFC2COMPEARLY.png&quot;, plot = p, width = 180, height = 200, units = &quot;mm&quot;, dpi = 500)</code></pre>
 </div>
 <div id="late-1" class="section level2">
 <h2>Late</h2>
@@ -571,9 +890,10 @@ log.plot.late.comp.data &lt;- log.plot.late.comp$data %&gt;%
   mutate(trt = c(&quot;Compost_late&quot;))
 
 # print plot with viridis color 
-log.plot.late.comp + scale_colour_viridis_d(option = &quot;plasma&quot;) +
-  theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-11-1.png" width="816" /></p>
+p &lt;- log.plot.late.comp + scale_colour_viridis_d(option = &quot;viridis&quot;) +
+  theme_my() +
+  theme(legend.position = &quot;none&quot;)
+ggsave(&quot;../Figures/LFC2COMPLATE.png&quot;, plot = p, width = 180, height = 200, units = &quot;mm&quot;, dpi = 500)</code></pre>
 <pre class="r"><code># Common to both early and late with LFC &gt;=4
 otustokeep &lt;- intersect(log.plot.early.comp.data$OTU, log.plot.late.comp.data$OTU)
 
@@ -606,7 +926,7 @@ all_comp &lt;- full_join(early_comp_OTUS, late_comp_OTUS)</code></pre>
 
 p + scale_colour_viridis_d(option = &quot;plasma&quot;) +
   theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-13-1.png" width="100%" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-14-1.png" width="100%" /></p>
 <pre class="r"><code># Save this list of compcompa LFC &gt; 2 for more plots
 saveRDS(all_comp, file = &quot;../data/LFC_comp_OTUs.RDS&quot;)</code></pre>
 </div>
@@ -615,7 +935,7 @@ saveRDS(all_comp, file = &quot;../data/LFC_comp_OTUs.RDS&quot;)</code></pre>
 <p>These OTUs had response greater than 4 in both early and late compost</p>
 <pre class="r"><code>OTUs &lt;- all_comp %&gt;%
   filter(Compost_early_log2FoldChange&gt;4 &amp; Compost_late_log2FoldChange&gt;4)
-
+write.table(OTUs, file = &quot;../Figures/commp_responders.txt&quot;, sep = &quot;,&quot;, quote = F, row.names = F)
 kable(OTUs) %&gt;%
   kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
   scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)</code></pre>
@@ -670,10 +990,36 @@ Sphaerobacteraceae
 Sphaerobacter
 </td>
 <td style="text-align:right;">
-7.333830
+7.337210
 </td>
 <td style="text-align:right;">
-6.397724
+6.388256
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Otu00030
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+<td style="text-align:left;">
+Bacteria_unclassified
+</td>
+<td style="text-align:right;">
+6.752488
+</td>
+<td style="text-align:right;">
+5.514221
 </td>
 </tr>
 <tr>
@@ -696,10 +1042,10 @@ Proteobacteria_unclassified
 Proteobacteria_unclassified
 </td>
 <td style="text-align:right;">
-5.133128
+5.096813
 </td>
 <td style="text-align:right;">
-6.224653
+6.140644
 </td>
 </tr>
 <tr>
@@ -722,10 +1068,10 @@ Nocardiopsaceae
 Thermobifida
 </td>
 <td style="text-align:right;">
-6.563901
+6.568113
 </td>
 <td style="text-align:right;">
-5.247507
+5.232289
 </td>
 </tr>
 <tr>
@@ -748,10 +1094,10 @@ Myxococcales_unclassified
 Myxococcales_unclassified
 </td>
 <td style="text-align:right;">
-6.125951
+6.194088
 </td>
 <td style="text-align:right;">
-5.054827
+5.011721
 </td>
 </tr>
 <tr>
@@ -774,10 +1120,10 @@ Myxococcales_unclassified
 Myxococcales_unclassified
 </td>
 <td style="text-align:right;">
-4.564746
+4.639985
 </td>
 <td style="text-align:right;">
-4.587303
+4.534942
 </td>
 </tr>
 <tr>
@@ -800,10 +1146,10 @@ Gammaproteobacteria_unclassified
 Gammaproteobacteria_unclassified
 </td>
 <td style="text-align:right;">
-4.718963
+4.722531
 </td>
 <td style="text-align:right;">
-4.305848
+4.271424
 </td>
 </tr>
 <tr>
@@ -826,10 +1172,10 @@ Opitutaceae
 Opitutaceae_unclassified
 </td>
 <td style="text-align:right;">
-4.244084
+4.243413
 </td>
 <td style="text-align:right;">
-4.339431
+4.304094
 </td>
 </tr>
 <tr>
@@ -852,10 +1198,10 @@ Chloroflexi_unclassified
 Chloroflexi_unclassified
 </td>
 <td style="text-align:right;">
-6.595953
+6.598657
 </td>
 <td style="text-align:right;">
-5.560310
+5.517442
 </td>
 </tr>
 <tr>
@@ -878,10 +1224,10 @@ Alteromonadaceae
 Haliea
 </td>
 <td style="text-align:right;">
-4.690868
+4.722263
 </td>
 <td style="text-align:right;">
-4.920388
+4.896955
 </td>
 </tr>
 <tr>
@@ -904,10 +1250,10 @@ Myxococcales_unclassified
 Myxococcales_unclassified
 </td>
 <td style="text-align:right;">
-6.766203
+6.786259
 </td>
 <td style="text-align:right;">
-5.657540
+5.738909
 </td>
 </tr>
 <tr>
@@ -930,10 +1276,10 @@ Myxococcales_unclassified
 Myxococcales_unclassified
 </td>
 <td style="text-align:right;">
-5.019151
+5.036159
 </td>
 <td style="text-align:right;">
-4.032267
+4.052133
 </td>
 </tr>
 <tr>
@@ -956,10 +1302,10 @@ Planctomycetaceae
 Planctomycetaceae_unclassified
 </td>
 <td style="text-align:right;">
-4.531744
+4.516581
 </td>
 <td style="text-align:right;">
-4.556528
+4.529000
 </td>
 </tr>
 </tbody>
@@ -988,9 +1334,10 @@ log.plot.early.mix.data &lt;- log.plot.early.mix$data %&gt;%
   mutate(trt = c(&quot;Mix_early&quot;))
 
 # print plot with viridis color 
-log.plot.early.mix + scale_colour_viridis_d(option = &quot;plasma&quot;) +
-  theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-15-1.png" width="816" /></p>
+p &lt;- log.plot.early.mix + scale_colour_viridis_d(option = &quot;viridis&quot;) +
+  theme_my() +
+  theme(legend.position = &quot;none&quot;)
+ggsave(&quot;../Figures/LFC2MIXEARLY.png&quot;, plot = p, width = 180, height = 200, units = &quot;mm&quot;, dpi = 500)</code></pre>
 </div>
 <div id="late-2" class="section level2">
 <h2>Late</h2>
@@ -1010,9 +1357,10 @@ log.plot.late.mix.data &lt;- log.plot.late.mix$data %&gt;%
   mutate(trt = c(&quot;Mix_late&quot;))
 
 # print plot with viridis color 
-log.plot.late.mix + scale_colour_viridis_d(option = &quot;plasma&quot;) +
-  theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-16-1.png" width="816" /></p>
+p &lt;- log.plot.late.mix + scale_colour_viridis_d(option = &quot;viridis&quot;) +
+  theme_my() +
+  theme(legend.position = &quot;none&quot;)
+ggsave(&quot;../Figures/LFC2MIXLATE.png&quot;, plot = p, width = 180, height = 200, units = &quot;mm&quot;, dpi = 500)</code></pre>
 <pre class="r"><code># Common to both early and late with LFC &gt;=4
 otustokeep &lt;- intersect(log.plot.early.mix.data$OTU, log.plot.late.mix.data$OTU)
 
@@ -1041,10 +1389,10 @@ all_mix &lt;- full_join(early_mix_OTUS, late_mix_OTUS)</code></pre>
   geom_miss_point() +
   geom_text_repel(aes(label=ifelse(Mix_early_log2FoldChange&gt;4 &amp; Mix_late_log2FoldChange&gt;4,as.character(OTU),&#39;&#39;)),hjust=0,vjust=0) 
 p</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-18-1.png" width="100%" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-19-1.png" width="100%" /></p>
 <pre class="r"><code>p + scale_colour_viridis_d(option = &quot;plasma&quot;) +
   theme_dark()</code></pre>
-<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-18-2.png" width="100%" /></p>
+<p><img src="AmendmentDESeq_files/figure-html/unnamed-chunk-19-2.png" width="100%" /></p>
 <pre class="r"><code># Save this list of mixmixa LFC &gt; 2 for more plots
 saveRDS(all_mix, file = &quot;../data/LFC_mix_OTUs.RDS&quot;)</code></pre>
 </div>
@@ -1053,7 +1401,7 @@ saveRDS(all_mix, file = &quot;../data/LFC_mix_OTUs.RDS&quot;)</code></pre>
 <p>These OTUs had response greater than 4 in both early and late mix</p>
 <pre class="r"><code>OTUs &lt;- all_mix %&gt;%
   filter(Mix_early_log2FoldChange&gt;4 &amp; Mix_late_log2FoldChange&gt;4)
-
+write.table(OTUs, file = &quot;../Figures/mix_responders.txt&quot;, sep = &quot;,&quot;, quote = F, row.names = F)
 kable(OTUs) %&gt;%
   kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
   scroll_box(width = &quot;100%&quot;, height = &quot;400px&quot;)</code></pre>
@@ -1108,10 +1456,10 @@ Sphaerobacteraceae
 Sphaerobacter
 </td>
 <td style="text-align:right;">
-5.603070
+5.700092
 </td>
 <td style="text-align:right;">
-4.400343
+4.563735
 </td>
 </tr>
 <tr>
@@ -1134,10 +1482,10 @@ Proteobacteria_unclassified
 Proteobacteria_unclassified
 </td>
 <td style="text-align:right;">
-4.425215
+4.489853
 </td>
 <td style="text-align:right;">
-4.625760
+4.771429
 </td>
 </tr>
 <tr>
@@ -1160,10 +1508,10 @@ Nocardiopsaceae
 Thermobifida
 </td>
 <td style="text-align:right;">
-4.795846
+4.893353
 </td>
 <td style="text-align:right;">
-4.141254
+4.339406
 </td>
 </tr>
 <tr>
@@ -1186,10 +1534,10 @@ Paenibacillaceae_1
 Paenibacillus
 </td>
 <td style="text-align:right;">
-4.657377
+4.782181
 </td>
 <td style="text-align:right;">
-4.580972
+4.802353
 </td>
 </tr>
 <tr>
@@ -1212,10 +1560,10 @@ Planctomycetaceae
 Planctomycetaceae_unclassified
 </td>
 <td style="text-align:right;">
-4.158366
+4.244290
 </td>
 <td style="text-align:right;">
-4.386717
+4.541349
 </td>
 </tr>
 </tbody>

@@ -15,13 +15,6 @@ output:
 knitr::opts_knit$set(root.dir = normalizePath("."))
 ```
 
-#```{r, cache=TRUE}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(c("phyloseq", "DESeq2"))
-#```
-
 ```{r, echo = F, message = F, warning = F, cache=TRUE}
 # Load libraries
 library(tidyverse)
@@ -36,10 +29,35 @@ library(gridExtra)
 ```
 
 ```{r}
-inc.physeq <- readRDS("../data/not.rare.nounclass")
+inc.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
 source("../code/functions.R")
 ```
+```{r}
+data <- data.frame(sample_data(inc.physeq)) %>%
+  mutate(treatment = recode(treatment,
+                            'Control' = 'Reference',
+                            'CompAlfa' = 'Mix')) %>%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) %>%
+  mutate(TreatmentAndDay = paste(treatment, day))
 
+rownames(data) <- data$i_id
+sample_data(inc.physeq) <- data
+sample_data(inc.physeq)$day <- as.factor(sample_data(inc.physeq)$day)
+
+inc.physeq.data <- data.frame(sample_data(inc.physeq))
+inc.physeq.data$response.group[inc.physeq.data$day == "0"] <-
+  "baseline"
+inc.physeq.data$response.group[inc.physeq.data$day %in% c("7", "14", "21")] <-
+  "early"
+inc.physeq.data$response.group[inc.physeq.data$day %in% c("35", "49", "97")] <-
+  "late"
+
+inc.physeq.data <- inc.physeq.data %>%
+  mutate(Treatment_Response = paste(treatment, response.group, sep = '_'))
+
+rownames(inc.physeq.data) <- inc.physeq.data$i_id
+sample_data(inc.physeq) <- inc.physeq.data
+```
 # Alfalfa Responders   
 
 ## Early
@@ -56,15 +74,17 @@ log.plot.early.alf <- alf.early %>%
   phyloseq_to_deseq2( ~ Treatment_Response) %>%
   DESeq(test = "Wald", fitType = "local") %>%
   who_diff_day("Alfalfa_early", "Reference_early", alf.early) %>%
-  log_plot("Alfalfa OTUS in early group that are significantly changing compared to reference early")
+  log_plot("Alfalfa OTUS in early group that are significantly more \n abundant compared to reference early (LFC > 2)")
 
 # Add colum to data indicating treatment
 log.plot.early.alf.data <- log.plot.early.alf$data %>%
   mutate(trt = c("Alfalfa_early"))
 
 # print plot with viridis color 
-log.plot.early.alf + scale_colour_viridis_d(option = "plasma") +
-  theme_dark()
+p <- log.plot.early.alf + scale_colour_viridis_d(option = "plasma") +
+  theme_my()
+
+ggsave("../Figures/LFC2ALFEARLY.png", plot = p, width = 180, height = 200, units = "mm", dpi = 500)
 ```
 
 ## Late    
@@ -85,8 +105,10 @@ log.plot.late.alf.data <- log.plot.late.alf$data %>%
   mutate(trt = c("Alfalfa_late"))
 
 # print plot with viridis color 
-log.plot.late.alf + scale_colour_viridis_d(option = "plasma") +
-  theme_dark()
+p <- log.plot.late.alf + scale_colour_viridis_d(option = "plasma") +
+  theme_my()
+p
+ggsave("../Figures/LFC2ALFLATE.png", plot = p, width = 180, height = 200, units = "mm", dpi = 500)
 ```
 
 ```{r, message = F, warning = F}
@@ -131,16 +153,17 @@ p + scale_colour_viridis_d(option = "plasma") +
 # Use all_alf
 saveRDS(all_alf, file = "../data/LFC_alf_OTUs.RDS")
 
-png("../Figures/early_late_alf_responders.png",height=5,width=8,units='in',res=300)
-p + scale_colour_viridis_d(option = "viridis") +
-  theme_bw() +
+
+p <- p + scale_colour_viridis_d(option = "viridis") +
+  theme_my() +
   theme(legend.position = "none")
-dev.off()
+ggsave("../Figures/LFC4ALFBOTH.png", plot = p, width = 90, height = 90, units = "mm", dpi = 500)
+
 ```
 
 ## Plot a table of the Alfalfa OTUs with taxonomy   
 
-These OTUs had response greater than 2 in both early and late alfalfa   
+These OTUs had response greater than 4 in both early and late alfalfa   
 
 ```{r, message = F, warning = F}
 OTUs <- all_alf %>%
@@ -149,6 +172,7 @@ write.table(OTUs, file = "../Figures/alf_responders.txt", sep = ",", quote = F, 
 table <- kable(OTUs) %>%
   kable_styling(bootstrap_options = "striped") %>%
   scroll_box(width = "100%", height = "400px")
+table
 ```
 
 ### Two Otus in the top 10 of alfalfa responders were from the Genus Pseudomonas     
@@ -194,8 +218,11 @@ log.plot.early.comp.data <- log.plot.early.comp$data %>%
   mutate(trt = c("Compost_early"))
 
 # print plot with viridis color 
-log.plot.early.comp + scale_colour_viridis_d(option = "plasma") +
-  theme_dark()
+p <- log.plot.early.comp + scale_colour_viridis_d(option = "viridis") +
+  theme_my() +
+  theme(legend.position = "none")
+p
+ggsave("../Figures/LFC2COMPEARLY.png", plot = p, width = 180, height = 200, units = "mm", dpi = 500)
 ```
 
 ## Late    
@@ -216,8 +243,11 @@ log.plot.late.comp.data <- log.plot.late.comp$data %>%
   mutate(trt = c("Compost_late"))
 
 # print plot with viridis color 
-log.plot.late.comp + scale_colour_viridis_d(option = "plasma") +
-  theme_dark()
+p <- log.plot.late.comp + scale_colour_viridis_d(option = "viridis") +
+  theme_my() +
+  theme(legend.position = "none")
+p
+ggsave("../Figures/LFC2COMPLATE.png", plot = p, width = 180, height = 200, units = "mm", dpi = 500)
 ```
 
 ```{r, message = F, warning = F}
@@ -267,7 +297,7 @@ These OTUs had response greater than 4 in both early and late compost
 ```{r, message = F, warning = F}
 OTUs <- all_comp %>%
   filter(Compost_early_log2FoldChange>4 & Compost_late_log2FoldChange>4)
-
+write.table(OTUs, file = "../Figures/comp_responders.txt", sep = ",", quote = F, row.names = F)
 kable(OTUs) %>%
   kable_styling(bootstrap_options = "striped") %>%
   scroll_box(width = "100%", height = "400px")
@@ -294,8 +324,11 @@ log.plot.early.mix.data <- log.plot.early.mix$data %>%
   mutate(trt = c("Mix_early"))
 
 # print plot with viridis color 
-log.plot.early.mix + scale_colour_viridis_d(option = "plasma") +
-  theme_dark()
+p <- log.plot.early.mix + scale_colour_viridis_d(option = "viridis") +
+  theme_my() +
+  theme(legend.position = "none")
+p
+ggsave("../Figures/LFC2MIXEARLY.png", plot = p, width = 180, height = 200, units = "mm", dpi = 500)
 ```
 
 ## Late    
@@ -316,8 +349,11 @@ log.plot.late.mix.data <- log.plot.late.mix$data %>%
   mutate(trt = c("Mix_late"))
 
 # print plot with viridis color 
-log.plot.late.mix + scale_colour_viridis_d(option = "plasma") +
-  theme_dark()
+p <- log.plot.late.mix + scale_colour_viridis_d(option = "viridis") +
+  theme_my() +
+  theme(legend.position = "none")
+p
+ggsave("../Figures/LFC2MIXLATE.png", plot = p, width = 180, height = 200, units = "mm", dpi = 500)
 ```
 
 ```{r, message = F, warning = F}
@@ -365,7 +401,7 @@ These OTUs had response greater than 4 in both early and late mix
 ```{r, message = F, warning = F}
 OTUs <- all_mix %>%
   filter(Mix_early_log2FoldChange>4 & Mix_late_log2FoldChange>4)
-
+write.table(OTUs, file = "../Figures/mix_responders.txt", sep = ",", quote = F, row.names = F)
 kable(OTUs) %>%
   kable_styling(bootstrap_options = "striped") %>%
   scroll_box(width = "100%", height = "400px")
