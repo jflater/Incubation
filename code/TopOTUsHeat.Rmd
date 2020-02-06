@@ -1,0 +1,108 @@
+---
+title: "Top OTUs over time in each amendment"
+output:
+  html_document:
+    df_print: paged
+    fig_width: 8.5
+    fig_height: 11
+    fig_caption: true
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hide
+---
+```{r}
+inc.raw.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
+```
+
+```{r}
+library(phyloseq)
+library(tidyverse)
+library(vegan)
+```
+```{r}
+inc.physeq <- subset_samples(inc.raw.physeq, day %in% c("7",
+                                                        "14",
+                                                        "21",
+                                                        "35",
+                                                        "49",
+                                                        "97"))
+pp <- inc.physeq %>%
+  filter_taxa(function(x) sum(x) >= 1, T)
+```
+```{r}
+rare <- rarefy_even_depth(pp, sample.size = 6000, rngseed = 2222, replace = F, trimOTUs = T)
+```
+```{r}
+# physeq <- rare
+# days <- c("7", "14", "21", "35", "49", "97")
+# trt <-  c("Alfalfa")
+Day_top10 <- function(physeq, trt, days){
+  trt <- prune_samples(sample_data(physeq)$treatment %in% c(trt), physeq)
+  
+  d0 <- subset_samples(trt, day == days[1]) 
+  l0 <- names(sort(taxa_sums(d0), TRUE)[1:5])
+  
+  d7 <- subset_samples(trt, day == days[2]) 
+  l7 <- names(sort(taxa_sums(d7), TRUE)[1:5])   
+  
+  d14 <- subset_samples(trt, day == days[3]) 
+  l14 <- names(sort(taxa_sums(d14), TRUE)[1:5])   
+  
+  d21 <- subset_samples(trt, day == days[4]) 
+  l21 <- names(sort(taxa_sums(d21), TRUE)[1:5])
+  
+  d35 <- subset_samples(trt, day == days[5]) 
+  l35 <- names(sort(taxa_sums(d35), TRUE)[1:5])
+  
+  d49 <- subset_samples(trt, day == days[6]) 
+  l49 <- names(sort(taxa_sums(d49), TRUE)[1:5])
+  
+
+  list <- unique(c(l0, l7, l14, l21, l35, l49))
+  list
+  phy <- prune_taxa(list, trt) %>%
+      filter_taxa(function(x) sum(x) >= 1, T) %>%
+      transform_sample_counts(function(x) x / sum(x))
+  
+  data <- psmelt(phy)
+  
+  p <- ggplot(data, aes(factor(day), Abundance)) +
+    geom_violin(aes(fill = Genus)) +
+    facet_wrap(. ~ Genus)
+  p
+}
+```
+
+# Alfalfa's top 5 most abundant genera   
+
+While there are more than 5 OTUs that represent the most abundant 5 OTUs from each day, we only see 6 genera listed because some of these OTUs share the same genera. 
+```{r}
+days <- c("7", "14", "21", "35", "49", "97")
+alf <- Day_top10(rare, c("Alfalfa"), days)
+alf
+```
+
+# Compost's top 5 most abundant genera  
+ 
+```{r}
+days <- c("7", "14", "21", "35", "49", "97")
+c <- Day_top10(rare, c("Compost"), days)
+c
+```
+
+# Mix's top 5 most abundant genera  
+ 
+```{r}
+days <- c("7", "14", "21", "35", "49", "97")
+ca <- Day_top10(rare, c("CompAlfa"), days)
+ca
+```
+
+# Control's top 5 most abundant genera  
+ 
+```{r}
+days <- c("7", "14", "21", "35", "49", "97")
+cc <- Day_top10(rare, c("Control"), days)
+cc
+```
