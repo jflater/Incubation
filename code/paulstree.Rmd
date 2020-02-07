@@ -33,7 +33,6 @@ library(phyloseq)
 library(ggtree)
 library(treeio)
 library(viridis)
-library(phylosmith)
 library(kableExtra)
 library(vegan)
 ```
@@ -148,11 +147,12 @@ kable(new_DF) %>%
 ```
 
 ```{r}
-p3 <- ggtree(inc_resp, aes(color=branch.length)) +
-  geom_tiplab(size=2, color="plum1") +
-  geom_label2(aes(subset=!isTip, label=node), size=2, color="darkred", alpha=0.5) +
-  scale_color_continuous(low='white', high='hotpink', name="Branch length (my)") +
-  theme(legend.position="bottom")
-plot(p3)
+p <- tree_plot +
+  geom_label2(aes(subset = node %in% c(159,201,124,133), label=node), size=2, color="darkblue", alpha=1)
+z <- tree_plot +
+  geom_label2(aes(subset = !isTip, label=node), size=2, color="darkblue", alpha=1) 
+p
+ggsave("../Figures/resp_tree_wnodes.png", plot = p, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
+ggsave("../Figures/resp_tree_allnodes.png", plot = z, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ```
 
