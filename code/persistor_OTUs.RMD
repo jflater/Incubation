@@ -8,7 +8,7 @@ library(phylosmith)
 
 Read in whole phyloseq object
 ```{r}
-incubation.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
+incubation.physeq <- readRDS("../data/RDS/incubation_physeq_Aug18.RDS")
 ```
 
 See what categories describe our treatments:
@@ -86,6 +86,7 @@ alf.heatmap
 saveRDS(alf.heatmap$data$OTU, "../data/alf.aliens.rds")
 ```
 ```{bash}
+
 blastp -query my1000seqs.fasta -db nr -remote
 ```
 
