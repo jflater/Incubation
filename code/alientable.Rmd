@@ -15,11 +15,11 @@ Table with # of aliens for each treatment and what period of the incubation they
 
 The lists of alien OTUs detected in amended microcosms was generated with <link>, we can load those lists along with the phyloseq object with clustering information from <link>:
 ```{r}
-alf.aliens <- readRDS("data/alf.aliens.rds")
-comp.aliens <- readRDS("data/comp.aliens.rds")
-mix.aliens <- readRDS("data/mix.aliens.rds")
+alf.aliens <- readRDS("../data/alf.aliens.rds")
+comp.aliens <- readRDS("../data/comp.aliens.rds")
+mix.aliens <- readRDS("../data/mix.aliens.rds")
 # Read in the phylsoeq object from the clustering script
-physeq <- readRDS("data/IncPhyseqRareClusteredTree")
+physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
 ```
 ```{r, warning=F, echo=F}
 alf <- prune_samples(sample_data(physeq)$treatment %in% c("Alfalfa"), physeq) %>%

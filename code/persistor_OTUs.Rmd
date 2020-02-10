@@ -3,7 +3,6 @@ Libraries needed
 library(phyloseq)
 library(tidyverse)
 library(gplots)
-library(phylosmith)
 ```
 
 Read in whole phyloseq object
@@ -50,7 +49,8 @@ AlfalfaSoil.otus <- GetOTUs(incubation.physeq, c("AlfalfaSoil"))
 ```
 
 ```{r, warning=F}
-GetAlienHeatMap <- function(physeq, control_otus, alien_otus, recieving_otus){
+# un-comment code in the function below for heatmap plotting. Likely easier to do it seperately though
+GetAlienHeatMap <- function(control_otus, alien_otus, recieving_otus){
   otus <- list(alien_otus, control_otus) 
   print("Looking for aliens between amendment and control soil")
   venn <- venn(otus)
@@ -84,7 +84,7 @@ GetAlienHeatMap <- function(physeq, control_otus, alien_otus, recieving_otus){
 ```
 
 ```{r, warning=FALSE}
-alf.heatmap <- GetAlienHeatMap(incubation.physeq, Control.otus, AlfalfaAmend.otus, Alfalfa.otus)
+alf.heatmap <- GetAlienHeatMap(Control.otus, AlfalfaAmend.otus, Alfalfa.otus)
 alf.heatmap
 saveRDS(alf.heatmap, "../data/alf.aliens.rds")
 test <- readRDS("../data/alf.aliens.rds")
@@ -96,18 +96,18 @@ test
 
 
 ```{r, warning=FALSE}
-comp.heatmap <- GetAlienHeatMap(incubation.physeq, Control.otus, CompostAmend.otus, Compost.otus, c(5))
+comp.heatmap <- GetAlienHeatMap( Control.otus, CompostAmend.otus, Compost.otus)
 comp.heatmap
-saveRDS(comp.heatmap$data$OTU, "../data/comp.aliens.rds")
+saveRDS(comp.heatmap, "../data/comp.aliens.rds")
 ```
 
 I didn't extract DNA from a mixed sample of compost and alfalfa, to get the list of potential aliens, we will combine the two lists from alfalfa and compost.
 
 ```{r, warning=FALSE}
 mix <- c(AlfalfaAmend.otus, CompostAmend.otus)
-mix.heatmap <- GetAlienHeatMap(incubation.physeq, Control.otus, mix, CompAlfa.otus, c(4))
+mix.heatmap <- GetAlienHeatMap(Control.otus, mix, CompAlfa.otus)
 mix.heatmap
-saveRDS(mix.heatmap$data$OTU, "../data/mix.aliens.rds")
+saveRDS(mix.heatmap, "../data/mix.aliens.rds")
 ```
 
 The relative abundance of the alien OTUs through the incubation is relatively low, but different between treatments. Could low abundance OTUs be drivers in this situation? We should compare the relative abundance of the dominant OTUs from each treatment.
