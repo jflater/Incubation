@@ -19,13 +19,15 @@ alf.aliens <- readRDS("../data/alf.aliens.rds")
 comp.aliens <- readRDS("../data/comp.aliens.rds")
 mix.aliens <- readRDS("../data/mix.aliens.rds")
 # Read in the phylsoeq object from the clustering script
-physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
+physeq <- readRDS("../data/physeq2020.RDS")
 ```
 ```{r, warning=F, echo=F}
-alf <- prune_samples(sample_data(physeq)$treatment %in% c("Alfalfa"), physeq) %>%
+alf <- subset_samples(physeq, treatment %in% c("Alfalfa") & day %in% c("7", "14", "21", "35", "49", "97")) %>%
   filter_taxa(function(x) sum(x) > 1, T)
+
 early.alf <- prune_samples(sample_data(alf)$response.group %in% c("early"), alf) %>%
   filter_taxa(function(x) sum(x) > 1, T)
+
 late.alf <- prune_samples(sample_data(alf)$response.group %in% c("late"), alf) %>%
   filter_taxa(function(x) sum(x) > 1, T)
 
@@ -58,7 +60,7 @@ print("Total number of OTUs detected in late alfalfa")
 nrow(otu_table(late.alf))
 ```
 ```{r, warning=F, echo=F}
-comp <- prune_samples(sample_data(physeq)$treatment %in% c("Compost"), physeq) %>%
+comp <- subset_samples(physeq, treatment %in% c("Compost") & day %in% c("7", "14", "21", "35", "49", "97")) %>%
   filter_taxa(function(x) sum(x) > 1, T)
 early.comp <- prune_samples(sample_data(comp)$response.group %in% c("early"), comp) %>%
   filter_taxa(function(x) sum(x) > 1, T)
@@ -94,7 +96,7 @@ print("Total number of OTUs detected in late Compost")
 nrow(otu_table(late.comp))
 ```
 ```{r, warning=F, echo=F}
-mix <- prune_samples(sample_data(physeq)$treatment %in% c("Mix"), physeq) %>%
+mix <- subset_samples(physeq, treatment %in% c("Mix") & day %in% c("7", "14", "21", "35", "49", "97")) %>%
   filter_taxa(function(x) sum(x) > 1, T)
 early.mix <- prune_samples(sample_data(mix)$response.group %in% c("early"), mix) %>%
   filter_taxa(function(x) sum(x) > 1, T)

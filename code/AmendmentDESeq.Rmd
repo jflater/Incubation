@@ -57,6 +57,7 @@ inc.physeq.data <- inc.physeq.data %>%
 
 rownames(inc.physeq.data) <- inc.physeq.data$i_id
 sample_data(inc.physeq) <- inc.physeq.data
+saveRDS(inc.physeq, "../data/physeq2020.RDS")
 ```
 # Alfalfa Responders   
 
