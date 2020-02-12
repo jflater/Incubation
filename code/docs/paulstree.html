@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Jared Flater" />
+
+
+<title>Phylogenetic tree of responding OTUs</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 54px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h2 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h3 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h4 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h5 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h6 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">WORLE Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Index</a>
+</li>
+<li>
+  <a href="manure_associated.html">Manure-associated</a>
+</li>
+<li>
+  <a href="diversity.html">Diversity</a>
+</li>
+<li>
+  <a href="ordinations.html">Ordinations</a>
+</li>
+<li>
+  <a href="args.html">ARGs</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Phylogenetic tree of responding OTUs</h1>
+<h4 class="author">Jared Flater</h4>
+<h4 class="date">1/15/2020</h4>
+
+</div>
+
+
+<pre class="r"><code>knitr::opts_knit$set(root.dir = normalizePath(&quot;.&quot;))</code></pre>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>We would like to visualize the phylogenetic relationship among the amendment responders. We do this by sub setting our data to those OTUs with a LFC of 4 in the early and late groups of each treatment.</p>
+<ul>
+<li>A tree file is necessary for this</li>
+</ul>
+<pre class="r"><code># We have a tree for this data
+tree &lt;- read.tree(&quot;../data/tree.nwk&quot;)
+# phyloseq object
+inc.physeq &lt;- readRDS(&quot;../data/incubation_physeq_Aug18.RDS&quot;)
+# Combine the two
+inc &lt;- merge_phyloseq(inc.physeq, tree)
+# Subset to desired samples
+inc &lt;- subset_samples(inc, day %in% c(&quot;7&quot;, &quot;14&quot;, &quot;21&quot;, &quot;35&quot;, &quot;49&quot;, &quot;97&quot;)) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 1, T) 
+
+inc10 &lt;- inc %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 10, T)
+#Below lines for posterity, I forget how to drop taxa sometimes
+#no.unclass &lt;- subset_taxa(inc, !Phylum==&quot;Bacteria_unclassified&quot;)
+#no.unclass &lt;- subset_taxa(no.unclass, !Genus==&quot;Gp6_unclassified&quot;)
+
+rm(tree, inc.physeq)</code></pre>
+<pre class="r"><code>inc</code></pre>
+<pre><code>## phyloseq-class experiment-level object
+## otu_table()   OTU Table:         [ 35197 taxa and 288 samples ]
+## sample_data() Sample Data:       [ 288 samples by 13 sample variables ]
+## tax_table()   Taxonomy Table:    [ 35197 taxa by 6 taxonomic ranks ]
+## phy_tree()    Phylogenetic Tree: [ 35197 tips and 35195 internal nodes ]</code></pre>
+<pre class="r"><code>inc10</code></pre>
+<pre><code>## phyloseq-class experiment-level object
+## otu_table()   OTU Table:         [ 11871 taxa and 288 samples ]
+## sample_data() Sample Data:       [ 288 samples by 13 sample variables ]
+## tax_table()   Taxonomy Table:    [ 11871 taxa by 6 taxonomic ranks ]
+## phy_tree()    Phylogenetic Tree: [ 11871 tips and 11869 internal nodes ]</code></pre>
+<p>2/3s of taxa are observed less than 10 times in the incubated samples…is this meaningful?</p>
+</div>
+<div id="tree" class="section level1">
+<h1>Tree</h1>
+<p>This tree is showing comparisons between amendment and reference, the previous example showed differences between amendment and reference plus amendment from the previous time point. This should be a more accurate representation of OTUs responding to the amendment for each</p>
+<pre class="r"><code># RDS saved from 
+resp_alf &lt;- readRDS(&quot;../data/LFC_alf_OTUs.RDS&quot;) %&gt;% dplyr::rename(label = OTU)
+resp_comp &lt;- readRDS(&quot;../data/LFC_comp_OTUs.RDS&quot;) %&gt;% dplyr::rename(label = OTU)
+resp_mix &lt;- readRDS(&quot;../data/LFC_mix_OTUs.RDS&quot;) %&gt;% dplyr::rename(label = OTU)
+
+resp &lt;- rbind(resp_alf[1], resp_comp[1], resp_mix[1])
+
+dist_all_resp &lt;- distinct(resp)
+
+df &lt;- resp_alf %&gt;%
+  full_join(resp_comp) %&gt;%
+  full_join(resp_mix)</code></pre>
+<pre class="r"><code>inc_resp &lt;- prune_taxa(c(df$label), inc) %&gt;%
+  filter_taxa(function(x) sum(x) &gt;= 1, T)</code></pre>
+<pre class="r"><code>inc_resp &lt;- phy_tree(inc_resp)
+inc_resp</code></pre>
+<pre><code>## 
+## Phylogenetic tree with 118 tips and 117 internal nodes.
+## 
+## Tip labels:
+##  Otu00889, Otu00064, Otu00494, Otu01028, Otu00329, Otu00511, ...
+## Node labels:
+##  0.948, 0.906, 0.989, 0.782, 0.857, 0.949, ...
+## 
+## Rooted; includes branch lengths.</code></pre>
+<pre class="r"><code>df2 = dplyr::mutate(df, newlab = paste(label, Genus, sep=&#39;|&#39;))
+head(df2)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["label"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Phylum"],"name":[2],"type":["chr"],"align":["left"]},{"label":["Class"],"name":[3],"type":["chr"],"align":["left"]},{"label":["Order"],"name":[4],"type":["chr"],"align":["left"]},{"label":["Family"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Genus"],"name":[6],"type":["chr"],"align":["left"]},{"label":["Alfalfa_early_log2FoldChange"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["Alfalfa_late_log2FoldChange"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["Compost_early_log2FoldChange"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Compost_late_log2FoldChange"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["Mix_early_log2FoldChange"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["Mix_late_log2FoldChange"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["newlab"],"name":[13],"type":["chr"],"align":["left"]}],"data":[{"1":"Otu00064","2":"Proteobacteria","3":"Gammaproteobacteria","4":"Pseudomonadales","5":"Pseudomonadaceae","6":"Pseudomonas","7":"5.607815","8":"4.949407","9":"NA","10":"NA","11":"4.356358","12":"NA","13":"Otu00064|Pseudomonas","_rn_":"1"},{"1":"Otu00138","2":"Verrucomicrobia","3":"Verrucomicrobia_unclassified","4":"Verrucomicrobia_unclassified","5":"Verrucomicrobia_unclassified","6":"Verrucomicrobia_unclassified","7":"4.236828","8":"NA","9":"NA","10":"NA","11":"NA","12":"NA","13":"Otu00138|Verrucomicrobia_unclassified","_rn_":"2"},{"1":"Otu00151","2":"Verrucomicrobia","3":"Verrucomicrobia_unclassified","4":"Verrucomicrobia_unclassified","5":"Verrucomicrobia_unclassified","6":"Verrucomicrobia_unclassified","7":"4.357867","8":"NA","9":"NA","10":"NA","11":"NA","12":"NA","13":"Otu00151|Verrucomicrobia_unclassified","_rn_":"3"},{"1":"Otu00222","2":"Firmicutes","3":"Bacilli","4":"Bacillales","5":"Planococcaceae","6":"Sporosarcina","7":"4.138817","8":"NA","9":"NA","10":"NA","11":"NA","12":"NA","13":"Otu00222|Sporosarcina","_rn_":"4"},{"1":"Otu00329","2":"Proteobacteria","3":"Gammaproteobacteria","4":"Pseudomonadales","5":"Pseudomonadaceae","6":"Cellvibrio","7":"4.021022","8":"NA","9":"4.451557","10":"NA","11":"NA","12":"NA","13":"Otu00329|Cellvibrio","_rn_":"5"},{"1":"Otu00477","2":"Proteobacteria","3":"Alphaproteobacteria","4":"Caulobacterales","5":"Caulobacteraceae","6":"Asticcacaulis","7":"4.308063","8":"NA","9":"5.250686","10":"NA","11":"4.370430","12":"NA","13":"Otu00477|Asticcacaulis","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>resp_p &lt;- ggtree(inc_resp, branch.length = &quot;none&quot;, aes(color=Phylum)) %&lt;+% df2 +
+  geom_tiplab(aes(label=newlab), size=3, align=TRUE, linesize=.5) +
+  theme_tree() </code></pre>
+<pre class="r"><code>colnames(df2)</code></pre>
+<pre><code>##  [1] &quot;label&quot;                        &quot;Phylum&quot;                      
+##  [3] &quot;Class&quot;                        &quot;Order&quot;                       
+##  [5] &quot;Family&quot;                       &quot;Genus&quot;                       
+##  [7] &quot;Alfalfa_early_log2FoldChange&quot; &quot;Alfalfa_late_log2FoldChange&quot; 
+##  [9] &quot;Compost_early_log2FoldChange&quot; &quot;Compost_late_log2FoldChange&quot; 
+## [11] &quot;Mix_early_log2FoldChange&quot;     &quot;Mix_late_log2FoldChange&quot;     
+## [13] &quot;newlab&quot;</code></pre>
+<pre class="r"><code>head(df2$label)</code></pre>
+<pre><code>## [1] &quot;Otu00064&quot; &quot;Otu00138&quot; &quot;Otu00151&quot; &quot;Otu00222&quot; &quot;Otu00329&quot; &quot;Otu00477&quot;</code></pre>
+<pre class="r"><code>df3 &lt;- df2 %&gt;%
+  select(label, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %&gt;%
+  column_to_rownames(var = &quot;label&quot;)
+
+write.csv(df3, file =&quot;../data/resp_table.csv&quot;)
+final_resp &lt;- resp_p %&gt;% 
+  gheatmap(df3, offset= 35, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = &quot;white&quot;) +
+  ggtitle(&quot;Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference&quot;)</code></pre>
+<pre class="r"><code>tree_plot &lt;- plot(final_resp) + scale_fill_viridis(option = &quot;plasma&quot;) +
+  guides(fill=guide_legend(title=&quot;Log fold change&quot;))</code></pre>
+<p><img src="paulstree_files/figure-html/unnamed-chunk-11-1.png" width="816" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/resp_tree_final.png&quot;, plot = tree_plot, device = &quot;png&quot;, width = 18.5, height = 32, units = &quot;cm&quot;, dpi = 350)</code></pre>
+<div id="table-of-otus" class="section level2">
+<h2>Table of Otus</h2>
+<p>All Otus with LFC greater than 4 in all treatment response groups</p>
+<pre class="r"><code># Common responders in all amendments and response groups
+new_DF &lt;- df3[rowSums(is.na(df3)) == 0,]
+kable(new_DF) %&gt;%
+  kable_styling(bootstrap_options = &quot;striped&quot;) %&gt;%
+  scroll_box(width = &quot;100%&quot;)</code></pre>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Alfalfa_Early
+</th>
+<th style="text-align:right;">
+Alfalfa_Late
+</th>
+<th style="text-align:right;">
+Compost_Early
+</th>
+<th style="text-align:right;">
+Compost_Late
+</th>
+<th style="text-align:right;">
+Mix_Early
+</th>
+<th style="text-align:right;">
+Mix_Late
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Otu00847
+</td>
+<td style="text-align:right;">
+4.341184
+</td>
+<td style="text-align:right;">
+4.855624
+</td>
+<td style="text-align:right;">
+4.516581
+</td>
+<td style="text-align:right;">
+4.529
+</td>
+<td style="text-align:right;">
+4.24429
+</td>
+<td style="text-align:right;">
+4.541349
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>p &lt;- tree_plot  + 
+  geom_hilight(node = 232, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 201, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 212, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 183, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 186, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 193, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 158, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 132, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 124, fill = &quot;gray&quot;, alpha=0.4, extend = 36) + 
+  geom_hilight(node = 126, fill = &quot;gray&quot;, alpha=0.4, extend = 36) +
+  geom_label2(aes(subset = node %in% c(232,201,212,183,186,193,158,132,124,126), label=node), size=2, color=&quot;black&quot;, fill=&quot;gray&quot;, alpha = 1)
+
+z &lt;- tree_plot +
+  geom_label2(aes(subset = !isTip, label=node), size=2, color=&quot;darkblue&quot;, alpha=1) 
+p</code></pre>
+<p><img src="paulstree_files/figure-html/unnamed-chunk-13-1.png" width="816" /></p>
+<pre class="r"><code>ggsave(&quot;../Figures/resp_tree_wnodes.png&quot;, plot = p, device = &quot;png&quot;, width = 18.5, height = 32, units = &quot;cm&quot;, dpi = 350)
+ggsave(&quot;../Figures/resp_tree_allnodes.png&quot;, plot = z, device = &quot;png&quot;, width = 18.5, height = 32, units = &quot;cm&quot;, dpi = 350)</code></pre>
+</div>
+</div>
+<div id="responders-orginating-from-amendment" class="section level1">
+<h1>Responders orginating from amendment?</h1>
+<p>Aliens??</p>
+<pre class="r"><code>treeOTUs &lt;- df3$label
+alfALIENs &lt;- readRDS(&quot;../data/alf.aliens.rds&quot;)
+compALIENs &lt;- readRDS(&quot;../data/comp.aliens.rds&quot;)
+mixALIENs &lt;- readRDS(&quot;../data/mix.aliens.rds&quot;)
+
+venn(list(treeOTUs, alfALIENs, compALIENs, mixALIENs), snames = c(&quot;Responder&quot;, &quot;Alf Aliens&quot;, &quot;Compost Aliens&quot;, &quot;Mix Aliens&quot;))</code></pre>
+<p><img src="paulstree_files/figure-html/unnamed-chunk-14-1.png" width="816" /></p>
+<p>Nope!</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

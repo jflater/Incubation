@@ -48,9 +48,18 @@ CompostAmend.otus <- GetOTUs(incubation.physeq, c("CompostAmend"))
 AlfalfaSoil.otus <- GetOTUs(incubation.physeq, c("AlfalfaSoil"))
 ```
 
+## Decision needed
+
+Do we identify aliens by comparing to control and opposite amended samples? I.E. amendment OTUs vs (Control + Compost OTUs)?
+
 ```{r, warning=F}
 # un-comment code in the function below for heatmap plotting. Likely easier to do it seperately though
 GetAlienHeatMap <- function(control_otus, alien_otus, recieving_otus){
+  
+  # control_otus <- unique(c(Control.otus, Compost.otus))
+  # alien_otus <- AlfalfaAmend.otus
+  # recieving_otus <- Alfalfa.otus
+  # 
   otus <- list(alien_otus, control_otus) 
   print("Looking for aliens between amendment and control soil")
   venn <- venn(otus)
@@ -59,6 +68,7 @@ GetAlienHeatMap <- function(control_otus, alien_otus, recieving_otus){
   print("Detecting aliens in amended soil")
   aliens.venn <- venn(aliens)
   aliens.detected <- attr(aliens.venn,"intersections")$`A:B`
+  
   # rare.merged <- merge_samples(physeq, "TreatmentAndDay")
   # sample_data(rare.merged)$TreatmentAndDay <-  levels(sample_data(physeq)$TreatmentAndDay)
   # sample_data(rare.merged)$treatment <-  levels(sample_data(physeq)$treatment)
