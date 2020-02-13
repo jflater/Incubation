@@ -1,0 +1,94 @@
+---
+title: "alienpercentpopulation"
+output:
+  html_document:
+    df_print: paged
+    fig_width: 8.5
+    fig_height: 11
+    fig_caption: true
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hide
+---
+```{r setup, cache=TRUE}
+knitr::opts_knit$set(root.dir = normalizePath("."))
+```
+
+---
+```{r libraries}
+library(tidyverse)
+library(formattable)
+library(phyloseq)
+```
+
+```{r readphy}
+phy <- readRDS("../data/physeq2020.RDS")
+```
+
+# alf
+```{r alf}
+alf.aliens <- readRDS("../data/alf.aliens.rds")
+alf.phy <- phy %>%
+  subset_samples(treatment %in% c("Alfalfa") & day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 1, T)
+alf.phy
+
+pruned.alf.phy <- alf.phy %>%
+    transform_sample_counts(function(x) {x/sum(x)}) %>% 
+    psmelt() 
+
+alf.alien.abund <- pruned.alf.phy %>%
+  filter(OTU %in% alf.aliens) 
+
+test <- alf.alien.abund %>%
+  group_by(OTU, day) %>%
+  summarise(mean = mean(Abundance))
+
+x <- percent(sum(test$mean))
+print(paste(x, "of the relative abundance of OTUs are from alf aliens"))
+```
+# comp
+```{r comp}
+comp.aliens <- readRDS("../data/comp.aliens.rds")
+comp.phy <- phy %>%
+  subset_samples(treatment %in% c("Compost") & day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 1, T)
+comp.phy
+
+pruned.comp.phy <- comp.phy %>%
+    transform_sample_counts(function(x) {x/sum(x)}) %>% 
+    psmelt() 
+
+comp.alien.abund <- pruned.comp.phy %>%
+  filter(OTU %in% comp.aliens) 
+
+test <- comp.alien.abund %>%
+  group_by(OTU, day) %>%
+  summarise(mean = mean(Abundance))
+
+x <- percent(sum(test$mean))
+print(paste(x, "of the relative abundance of OTUs are from comp aliens"))
+```
+# mix
+```{r mix}
+mix.aliens <- readRDS("../data/mix.aliens.rds")
+mix.phy <- phy %>%
+  subset_samples(treatment %in% c("Mix") & day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 1, T)
+mix.phy
+
+pruned.mix.phy <- mix.phy %>%
+    transform_sample_counts(function(x) {x/sum(x)}) %>% 
+    psmelt() 
+
+mix.alien.abund <- pruned.mix.phy %>%
+  filter(OTU %in% mix.aliens) 
+
+test <- mix.alien.abund %>%
+  group_by(OTU, day) %>%
+  summarise(mean = mean(Abundance))
+
+x <- percent(sum(test$mean))
+print(paste(x, "of the relative abundance of OTUs are from mix aliens"))
+```
