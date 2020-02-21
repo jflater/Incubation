@@ -1,53 +1,46 @@
----
-title: Short Paper
-author:
-  - name: Alice Anonymous
-    email: alice@example.com
-    affiliation: Some Institute of Technology
-    footnote: 1
-  - name: Bob Security
-    email: bob@example.com
-    affiliation: Another University
-  - name: Cat Memes
-    email: cat@example.com
-    affiliation: Another University
-    footnote: 2
-  - name: Derek Zoolander
-    email: derek@example.com
-    affiliation: Some Institute of Technology
-    footnote: 2
-address:
-  - code: Some Institute of Technology
-    address: Department, Street, City, State, Zip
-  - code: Another University
-    address: Department, Street, City, State, Zip
-footnote:
-  - code: 1
-    text: "Corresponding Author"
-  - code: 2
-    text: "Equal contribution"
-abstract: |
-  This is the abstract.
+%% 
+%% Copyright 2019 Elsevier Ltd
+%% 
+%% This file is part of the 'CAS Bundle'.
+%% --------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for cas-sc documentclass for 
+%% single column output.
 
-  It consists of two paragraphs.
+%\documentclass[a4paper,fleqn,longmktitle]{cas-sc}
+\documentclass[a4paper,fleqn]{cas-sc}
 
-journal: "An awesome journal"
-date: "`r Sys.Date()`"
-bibliography: mybibfile.bib
-#linenumbers: true
-#numbersections: true
-csl: elsevier-harvard.csl
-output: 
-  pdf_document:
-    template: elsarticle.tex
----
+%\usepackage[numbers]{natbib}
+%\usepackage[authoryear]{natbib}
+\usepackage[authoryear,longnamesfirst]{natbib}
+
+%%%Author macros
+\def\tsc#1{\csdef{#1}{\textsc{\lowercase{#1}}\xspace}}
+\tsc{WGM}
+\tsc{QE}
+\tsc{EP}
+\tsc{PMS}
+\tsc{BEC}
+\tsc{DE}
+%%%
 
 \begin{document}
 \let\WriteBookmarks\relax
 \def\floatpagepagefraction{1}
 \def\textpagefraction{.001}
-\shorttitle{Bacterial response to amendment in incubated microcosms}
-\shortauthors{Flater et~al.}
+\shorttitle{Leveraging social media news}
+\shortauthors{CV Radhakrishnan et~al.}
+%\begin{frontmatter}
 
 \title [mode = title]{This is a specimen $a_b$ title}                      
 \tnotemark[1,2]
@@ -122,8 +115,7 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 \verb+\begin{keyword}+ \verb+...+ \verb+\end{keyword}+ 
 which
 contain the abstract and keywords respectively. 
-
-\noindent Each keyword shall be separated by a \verb+\sep+ command.
+Each keyword shall be separated by a \verb+\sep+ command.
 \end{abstract}
 
 \begin{graphicalabstract}
@@ -143,9 +135,10 @@ quadrupole exciton \sep polariton \sep \WGM \sep \BEC
 
 \maketitle
 
+
 \section{Introduction}
 
-The Elsevier cas-dc class is based on the
+The Elsevier cas-sc class is based on the
 standard article class and supports almost all of the functionality of
 that class. In addition, it features commands and options to format the
 \begin{itemize} \item document style \item baselineskip \item front
@@ -175,7 +168,7 @@ bothered about downloading any extra packages.
 
 The package is available at author resources page at Elsevier
 (\url{http://www.elsevier.com/locate/latex}).
-The class may be moved or copied to a place, usually,\linebreak
+The class may be moved or copied to a place, usually,
 \verb+$TEXMF/tex/latex/elsevier/+, %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 or a folder which will be read                   
 by \LaTeX{} during document compilation.  The \TeX{} file
@@ -203,13 +196,11 @@ Please use Bib\TeX\ to generate your bibliography and include DOIs
 whenever available.
 
 Here are two sample references: 
-\cite{Fortunato2010}
-\cite{Fortunato2010,NewmanGirvan2004}
-\cite{Fortunato2010,Vehlowetal2013}
+See \citet{Fortunato2010}. Also refer \citet{Fortunato2010,NewmanGirvan2004}.
+More citations are here \citep{Fortunato2010,Vehlowetal2013}.
 
 \section{Floats}
-{Figures} may be included using the command,\linebreak 
-\verb+\includegraphics+ in
+{Figures} may be included using the command, \verb+\includegraphics+ in
 combination with or without its several options to further control
 graphic. \verb+\includegraphics+ is provided by {graphic[s,x].sty}
 which is part of any standard \LaTeX{} distribution.
@@ -234,7 +225,7 @@ The \verb+table+ environment is handy for marking up tabular
 material. If users want to use {multirow.sty},
 {array.sty}, etc., to fine control/enhance the tables, they
 are welcome to load any package of their choice and
-{cas-dc.cls} will work in combination with all loaded
+{cas-sc.cls} will work in combination with all loaded
 packages.
 
 \begin{table}[width=.9\linewidth,cols=4,pos=h]
@@ -255,10 +246,10 @@ Col 1 & Col 2 & Col 3 & Col4\\
 
 \section[Theorem and ...]{Theorem and theorem like environments}
 
-{cas-dc.cls} provides a few shortcuts to format theorems and
+{cas-sc.cls} provides a few shortcuts to format theorems and
 theorem-like environments with ease. In all commands the options that
 are used with the \verb+\newtheorem+ command will work exactly in the same
-manner. {cas-dc.cls} provides three commands to format theorem or
+manner. {cas-sc.cls} provides three commands to format theorem or
 theorem-like environments: 
 
 \begin{verbatim}
@@ -286,7 +277,6 @@ will be printed as an extra heading in parentheses.
   \end{theorem}
 \end{verbatim}  
 
-
 \newtheorem{theorem}{Theorem}
 
 \begin{theorem}
@@ -308,7 +298,7 @@ upright font shape.  No counters are defined.
 
 
 \section[Enumerated ...]{Enumerated and Itemized Lists}
-{cas-dc.cls} provides an extended list processing macros
+{cas-sc.cls} provides an extended list processing macros
 which makes the usage a bit more user friendly than the default
 \LaTeX{} list macros.   With an optional argument to the
 \verb+\begin{enumerate}+ command, you can change the list counter
@@ -319,8 +309,8 @@ type and its attributes.
  \item The enumerate environment starts with an optional
    argument `1.', so that the item counter will be suffixed
    by a period.
- \item You can use `a)' for alphabetical counter and '(i)' 
-  for roman counter.
+ \item You can use `a)' for alphabetical counter and '(i)' for
+   roman counter.
   \begin{enumerate}[a)]
     \item Another level of list with alphabetical counter.
     \item One more item before we start another.
@@ -332,6 +322,7 @@ type and its attributes.
 Further, the enhanced list environment allows one to prefix a
 string like `step' to all the item numbers.  
 
+%\pagebreak
 \begin{verbatim}
  \begin{enumerate}[Step 1.]
   \item This is the first step of the example list.
@@ -364,7 +355,7 @@ scheme. When  you use model2-names.bst, the citation commands will be
 like \verb+\citep+,  \verb+\citet+, \verb+\citealt+ etc. However when
 you use model1-num-names.bst, you may use only \verb+\cite+ command.
 
-\verb+thebibliography+ environment.  Each reference is a\linebreak
+\verb+thebibliography+ environment.  Each reference is a
 \verb+\bibitem+ and each \verb+\bibitem+ is identified by a label,
 by which it can be cited in the text:
 
@@ -375,17 +366,18 @@ so-called Harvard or author-year style of referencing is enabled
 by the \LaTeX{} package {natbib}. With this package the
 literature can be cited as follows:
 
+
 \begin{enumerate}[\textbullet]
 \item Parenthetical: \verb+\citep{WB96}+ produces (Wettig \& Brown, 1996).
 \item Textual: \verb+\citet{ESG96}+ produces Elson et al. (1996).
-\item An affix and part of a reference:\break
+\item An affix and part of a reference:
 \verb+\citep[e.g.][Ch. 2]{Gea97}+ produces (e.g. Governato et
 al., 1997, Ch. 2).
 \end{enumerate}
 
 In the numbered scheme of citation, \verb+\cite{<label>}+ is used,
 since \verb+\citep+ or \verb+\citet+ has no relevance in the numbered
-scheme.  {natbib} package is loaded by {cas-dc} with
+scheme.  {natbib} package is loaded by {cas-sc} with
 \verb+numbers+ as default option.  You can change this to author-year
 or harvard scheme by adding option \verb+authoryear+ in the class
 loading command.  If you want to use more options of the {natbib}
@@ -448,6 +440,6 @@ Author biography. Author biography. Author biography.
 Author biography. Author biography. Author biography.
 \endbio
 
-\end{document}
 
+\end{document}
 

@@ -1,41 +1,36 @@
 %%
-%% This is file `elsarticle.cls',
-%% generated with the docstrip utility.
+%% This is file `cas-dc.cls'.
 %%
-%% The original source files were:
-%%
-%% elsarticle.dtx  (with options: `class')
-%%
-%% Copyright 2007, 2008 Elsevier Ltd.
-%%
-%% This file is part of the 'Elsarticle Bundle'.
-%% -------------------------------------------
-%%
+%% This file is part of the 'CAS Bundle'.
+%% ......................................
+%% 
 %% It may be distributed under the conditions of the LaTeX Project Public
 %% License, either version 1.2 of this license or (at your option) any
 %% later version.  The latest version of this license is in
 %%    http://www.latex-project.org/lppl.txt
 %% and version 1.2 or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
-%%
-%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
 %% given in the file `manifest.txt'.
-%%
-%%
- \def\RCSfile{elsarticle}%
+%% 
+
+%% $Id: cas-sc.cls 7 2019-02-13 12:02:17Z apu.v $
+
+ \def\RCSfile{cas-sc}%
  \def\RCSversion{1.0}%
- \def\RCSdate{2019/02/11}%
+ \def\RCSdate{2018/09/22}%
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{\RCSfile}[\RCSdate, \RCSversion: Formatting class
-   for CAS double column articles]
+   for CAS single column articles]
 %
 \def\ABD{\AtBeginDocument}
 %
 % switches
 % 
 \newif\iflongmktitle    \longmktitlefalse
-\newif\ifdc             \global\dctrue
-\newif\ifsc             \global\scfalse
+\newif\ifdc             \global\dcfalse
+\newif\ifsc             \global\sctrue
 \newif\ifcasreviewlayout  \global\casreviewlayoutfalse
 \newif\ifcasfinallayout   \global\casfinallayoutfalse
 
@@ -64,7 +59,7 @@
 
 \RequirePackage{expl3,xparse}
 \@ifundefined{regex_match:nnTF}{\RequirePackage{l3regex}}{}
-\RequirePackage{etoolbox,balance}
+\RequirePackage{etoolbox}
 \RequirePackage{booktabs,makecell,multirow,array,colortbl,dcolumn,stfloats}
 \RequirePackage{xspace,xstring,footmisc}
 \RequirePackage[svgnames,dvipsnames]{xcolor}
@@ -73,8 +68,6 @@
 \colorlet{scolor}{black}
 \colorlet{hscolor}{DarkSlateGrey}
 \hypersetup{%
-  pdftitle={\csuse{__short_title:}},
-  pdfauthor={\csuse{__short_authors:}},
   pdfcreator={LaTeX3; cas-sc.cls; hyperref.sty},
   pdfproducer={pdfTeX;},
   linkcolor={hscolor},
@@ -82,8 +75,11 @@
   citecolor={hscolor},
   filecolor={hscolor},
   menucolor={hscolor},
- }
-
+}
+% \AtEndDocument{\hypersetup
+%   {pdftitle={\csuse{__short_title:}},
+%   pdfauthor={\csuse{__short_authors:}}}}
+ 
  \let\comma\@empty
 \let\tnotesep\@empty
 \let\@title\@empty
@@ -98,7 +94,7 @@
 %
 \ExplSyntaxOn
 
-\RenewDocumentCommand \maketitle { }
+\RenewDocumentCommand \maketitle {}
 {
   \ifbool { usecasgrabsbox }
     { 
@@ -113,17 +109,18 @@
       \thispagestyle{empty}
       \unvbox\casauhlbox
     } { }    
-  \pagebreak
-  \thispagestyle{first}    
+  \pagebreak  
+  \thispagestyle{first}
   \ifbool{longmktitle}
   {
     \LongMaketitleBox
     \ProcessLongTitleBox
   }
   {
-    \twocolumn[\MaketitleBox]  
+    \MaketitleBox
     \printFirstPageNotes
   }
+  \normalcolor \normalfont
   \setcounter{footnote}{\int_use:N \g_stm_fnote_int}
   \renewcommand\thefootnote{\arabic{footnote}}
   \gdef\@pdfauthor{\infoauthors}
@@ -151,7 +148,7 @@
   \iow_term:x {  *********************************************************** }
 }
 
-\file_if_exist:nTF { inconsolata.sty }
+\file_if_exist:nTF { inconsolata }
 { \RequirePackage[scaled=.85]{inconsolata} }
 { \tex_gdef:D \ttdefault { cmtt } }
 
@@ -161,14 +158,15 @@
 %
 % Page geometry
 %
+
 \usepackage[%
-   paperwidth=210mm,
-   paperheight=280mm,
-   vmargin={19.5mm,18.2mm},
-   hmargin={18.1mm,18.1mm},
-   headsep=12pt,
-   footskip=12pt,
-   columnsep=18pt
+  paperwidth=192mm,
+  paperheight=262mm,
+%  vmargin={12.4mm,11.5mm},
+  vmargin={19mm,19mm},
+  hmargin={13.7mm,13.7mm},
+  headsep=12pt,
+  footskip=12pt,
 ]{geometry}
 
 

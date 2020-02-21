@@ -1,29 +1,23 @@
 %%
-%% This is file `elsarticle.cls',
-%% generated with the docstrip utility.
+%% This is file `cas-sc.cls'.
 %%
-%% The original source files were:
-%%
-%% elsarticle.dtx  (with options: `class')
-%%
-%% Copyright 2007, 2008 Elsevier Ltd.
-%%
-%% This file is part of the 'Elsarticle Bundle'.
-%% -------------------------------------------
-%%
+%% This file is part of the 'CAS Bundle'.
+%% ......................................
+%% 
 %% It may be distributed under the conditions of the LaTeX Project Public
 %% License, either version 1.2 of this license or (at your option) any
 %% later version.  The latest version of this license is in
 %%    http://www.latex-project.org/lppl.txt
 %% and version 1.2 or later is part of all distributions of LaTeX
 %% version 1999/12/01 or later.
-%%
-%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% 
+%% The list of all files belonging to the 'CAS Bundle' is
 %% given in the file `manifest.txt'.
-%%
-%% $Id: elsarticle.cls,v 1.18 2008-08-28 06:03:47 cvr Exp $
-%%
- \def\RCSfile{elsarticle}%
+%% 
+
+%% $Id: cas-dc.cls 7 2019-02-13 12:02:17Z apu.v $
+
+ \def\RCSfile{cas-dc}%
  \def\RCSversion{1.0}%
  \def\RCSdate{2019/02/11}%
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
