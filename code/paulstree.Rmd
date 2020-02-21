@@ -136,6 +136,9 @@ kable(new_DF) %>%
 ```
 
 ```{r}
+new.labels <- data.frame(node = c(232,201,212,183,186,193,158,132,124,126), 
+                         new.label = c(1,2,3,4,5,6,7,8,9,10))
+
 p <- tree_plot  + 
   geom_hilight(node = 232, fill = "gray", alpha=0.4, extend = 36) + 
   geom_hilight(node = 201, fill = "gray", alpha=0.4, extend = 36) + 
@@ -148,7 +151,22 @@ p <- tree_plot  +
   geom_hilight(node = 124, fill = "gray", alpha=0.4, extend = 36) + 
   geom_hilight(node = 126, fill = "gray", alpha=0.4, extend = 36) +
   geom_label2(aes(subset = node %in% c(232,201,212,183,186,193,158,132,124,126), label=node), size=2, color="black", fill="gray", alpha = 1)
-
+p
+x <- p <- tree_plot  + 
+  geom_hilight(node = 232, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 201, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 212, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 183, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 186, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 193, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 158, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 132, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 124, fill = "gray", alpha=0.4, extend = 36) + 
+  geom_hilight(node = 126, fill = "gray", alpha=0.4, extend = 36)
+x
+pp <- x %<+% new.labels +
+  geom_nodelab(aes(label=new.label), size=4, color="black", alpha = 1)
+pp
 z <- tree_plot +
   geom_label2(aes(subset = !isTip, label=node), size=2, color="darkblue", alpha=1) 
 p
@@ -156,6 +174,19 @@ ggsave("../Figures/resp_tree_wnodes.png", plot = p, device = "png", width = 18.5
 ggsave("../Figures/resp_tree_allnodes.png", plot = z, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ```
 
+```{r}
+tt = '((snail,mushroom),(((sunflower,evergreen_tree),leaves),green_salad));'
+tree = read.tree(text = tt)
+d <- data.frame(label = c('snail','mushroom', 'sunflower',
+                          'evergreen_tree','leaves', 'green_salad'),
+                group = c('animal', 'fungi', 'flowering plant',
+                          'conifers', 'ferns', 'mosses'))
+
+ggtree(tree, linetype = "dashed", size=1, color='firebrick') %<+% d + 
+  xlim(0, 4.5) + ylim(0.5, 6.5) +
+  geom_tiplab(parse="emoji", size=15, vjust=.25) +
+  geom_tiplab(aes(label = group), geom="label", x=3.5, hjust=.5)
+```
 
 
 # Responders orginating from amendment? 
