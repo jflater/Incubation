@@ -167,10 +167,10 @@ x
 pp <- x %<+% new.labels +
   geom_nodelab(aes(label=new.label), size=4, color="black", alpha = 1)
 pp
-z <- tree_plot +
+z <- pp +
   geom_label2(aes(subset = !isTip, label=node), size=2, color="darkblue", alpha=1) 
-p
-ggsave("../Figures/resp_tree_wnodes.png", plot = p, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
+z
+ggsave("../Figures/resp_tree_wnodes.png", plot = pp, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ggsave("../Figures/resp_tree_allnodes.png", plot = z, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ```
 
