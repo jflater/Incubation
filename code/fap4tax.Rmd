@@ -1,0 +1,65 @@
+---
+title: "Untitled"
+author: "Jared"
+date: "3/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r Libraries, echo=FALSE}
+install.packages("themetagenomics")
+```
+
+```{r}
+library(themetagenomics)
+library(tidyverse)
+tmp <- tempdir()
+download_ref(tmp,reference='silva_ko',overwrite=FALSE)
+```
+```{r}
+phy <- readRDS("../data/physeq2020.RDS")
+
+# RDS saved from 
+resp_alf <- readRDS("../data/LFC_alf_OTUs.RDS") %>% dplyr::rename(label = OTU)
+resp_comp <- readRDS("../data/LFC_comp_OTUs.RDS") %>% dplyr::rename(label = OTU)
+resp_mix <- readRDS("../data/LFC_mix_OTUs.RDS") %>% dplyr::rename(label = OTU)
+
+resp <- rbind(resp_alf[1], resp_comp[1], resp_mix[1])
+
+dist_all_resp <- distinct(resp)
+
+df <- resp_alf %>%
+  full_join(resp_comp) %>%
+  full_join(resp_mix)
+```
+# Node 1
+```{r, message=F, error=F, warning=F}
+n1 <- c("Otu02079", "Otu01822", "Otu02049", "Otu02163", "Otu02001")
+inc_resp <- prune_taxa(n1, phy) 
+inc_resp
+```
+
+```{r}
+OTU <- data.frame(otu_table(inc_resp))
+TAX <- data.frame(tax_table(inc_resp))
+```
+```{r}
+test <- t4f(OTU,rows_are_taxa=T,tax_table=TAX,
+                             reference_path=tmp,type='uproc',short=TRUE,
+                             cn_normalize=TRUE,sample_normalize=F,drop=TRUE)
+```
+```{r}
+test$fxn_meta
+```
+```{r}
+test$fxn_table[1:5,1:5]
+```
+```{r}
+test$method_meta
+```
+
