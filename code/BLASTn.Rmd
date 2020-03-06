@@ -9,22 +9,117 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r libraries}
+library(tidyverse)
+```
+```{bash}
+lftp -e "cd blast/executables/LATEST; dir; quit" ftp.ncbi.nlm.nih.gov | awk '{print $NF}'
+wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/ncbi-blast-2.3.0+-x64-linux.tar.gz # Check ouput of line above before selecting version
+```
+```{bash}
+tar -xzvf ncbi-blast-2.3.0+-x64-linux.tar.gz
+# Optional, remove the compressed package you downloaded
+rm ncbi-blast-2.3.0+-x64-linux.tar.gz
+cd ncbi-blast-2.3.0+
+```
+```{bash}
+lftp -e "cd blast/db; dir; quit" ftp.ncbi.nlm.nih.gov | awk '{print $NF}'
+```
+```{bash}
+cd ~/blast
+ls
+#mkdir blast_db
+ls
+cd blast_db
+ls
+wget ftp://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA.tar.gz
+```
+```{r}
+system2(command = "~/blast/ncbi-blast-2.10.0+/bin/blastn", 
+        args = c("-db blast/16SMicrobialDB/16sdb -query Documents/Incubation/data/refseq/blast.fasta -outfmt 6 -evalue 10e-6 -ungapped"))
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{bash} 
+cd ~/Documents/Incubation/data/refseq/
+grep -A1 "00022" jared.rep_seq.fa > blast.fasta
+cat blast.fasta
+```
+# rBLAST package
+```{r}
+library(devtools)
+install_github("mhahsler/rBLAST")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+library(rBLAST)
+getwd()
+seq <- readRNAStringSet("../data/refseq/blast.fa")
+seq
+```
+```{r}
+download.file("ftp://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA.tar.gz",
+    "~/blast/16SMicrobialDB/16S_ribosomal_RNA.tar.gz", mode='wb')
+```
+```{bash}
+cd ~/blast/
+ls
+```
+
+```{r}
+untar("~/blast/16SMicrobialDB/16S_ribosomal_RNA.tar.gz", exdir="../../../blast/16SMicrobialDB/16sdb")
+```
+```{r}
+Sys.getenv("PATH")
+
+Sys.setenv(PATH = paste(Sys.getenv("PATH"), "../../../blast/ncbi-blast-2.10.0+/bin", sep= .Platform$path.sep))
+system("blastn -version")
+Sys.which("blastn")
+```
+
+```{r}
+
+bl <- blast(db="~/blast/16SMicrobialDB/16sdb")
+bl
+```
+```{r}
+## query a sequence using BLAST
+cl <- predict(bl, seq)
+cl[1:5,]
+```
+
+```{r}
+blastn = "~/blast/ncbi-blast-2.10.0+/bin"
+blast_db = "~/blast/16SMicrobialDB/16sdb"
+input = "~/Documents/Incubation/data/refseq/blast.fasta"
+evalue = 1e-6
+format = 6
+colnames <- c("qseqid",
+               "sseqid",
+               "pident",
+               "length",
+               "mismatch",
+               "gapopen",
+               "qstart",
+               "qend",
+               "sstart",
+               "send",
+               "evalue",
+               "bitscore")
+
+blast_out <- system2(command = "blastn", 
+                     args = c("-db", blast_db, 
+                              "-query", input, 
+                              "-outfmt", format, 
+                              "-evalue", evalue,
+                              "-ungapped"),
+                     wait = TRUE,
+                     stdout = TRUE) %>%
+  as_tibble(blast_out) %>% 
+  separate(col = value, 
+           into = colnames,
+           sep = "\t",
+           convert = TRUE)
+```
+
