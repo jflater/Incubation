@@ -43,7 +43,7 @@ system2(command = "~/blast/ncbi-blast-2.10.0+/bin/blastn",
 
 ```{bash} 
 cd ~/Documents/Incubation/data/refseq/
-grep -A1 "00022" jared.rep_seq.fa > blast.fasta
+grep -A1 "00130" jared.rep_seq.fa > blast.fasta
 cat blast.fasta
 ```
 # rBLAST package
