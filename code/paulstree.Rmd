@@ -19,11 +19,12 @@ knitr::opts_knit$set(root.dir = normalizePath("."))
 
 ```{r, echo = F, message = F, warning = F, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
+    install.packages("BiocManager")
+
+# The following initializes usage of Bioc devel
+BiocManager::install(version='devel')
 
 BiocManager::install("ggtree")
-BiocManager::install("phyloseq")
-BiocManager::install("treeio")
 ```
 
 ```{r, echo = F, message = F, warning = F}
@@ -31,7 +32,6 @@ library(reshape2)
 library(tidyverse)
 library(phyloseq)
 library(ggtree)
-library(treeio)
 library(viridis)
 library(kableExtra)
 library(vegan)
@@ -45,7 +45,7 @@ We would like to visualize the phylogenetic relationship among the amendment res
 # We have a tree for this data
 tree <- read.tree("../data/tree.nwk")
 # phyloseq object
-inc.physeq <- readRDS("../data/incubation_physeq_Aug18.RDS")
+inc.physeq <- readRDS("../data/physeq2020.RDS")
 # Combine the two
 inc <- merge_phyloseq(inc.physeq, tree)
 # Subset to desired samples
@@ -91,10 +91,11 @@ inc_resp <- prune_taxa(c(df$label), inc) %>%
 ```
 
 ```{r, message=F, error=F, warning=F}
-inc_resp <- phy_tree(inc_resp)
-inc_resp
-tree <- ggtree(inc_resp, aes(color = Phylum))
+#inc_resp <- phy_tree(inc_resp)
+#inc_resp
+tree <- ggtree(inc_resp)
 tree
+
 tree$data
 ```
 ```{r, message=F, error=F, warning=F}
@@ -102,10 +103,15 @@ df2 = dplyr::mutate(df, newlab = paste(label, Genus, sep='|'))
 head(df2)
 ```
 ```{r, message=F, error=F, warning=F}
-resp_p <- ggtree(inc_resp, branch.length = "none", aes(color=Phylum)) %<+% df2 +
-  geom_tiplab(aes(label=newlab), size=3, align=TRUE, linesize=.5) +
+resp_p <- tree %<+% df2 
+resp_p  
+
+test <- ggtree(resp_p$data, aes(color = Phylum.x)) +
+  geom_tiplab(aes(label = newlab), size=3, align=TRUE, linesize=.5) +
   theme_tree() 
-resp_p
+test
+ggtree(test, aes(color = Phylum))
+p <- ggtree(resp_p, aes(color = Phylum))
 ```
 ```{r, message=F, error=F, warning=F}
 colnames(df2)
@@ -116,10 +122,10 @@ df3 <- df2 %>%
   column_to_rownames(var = "label")
 
 write.csv(df3, file ="../data/resp_table.csv")
-final_resp <- resp_p %>% 
+final_resp <- test %>% 
   gheatmap(df3, offset= 35, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
-
+final_resp
 ```
 ```{r, message=F, error=F, warning=F}
 
@@ -242,4 +248,64 @@ t
 df2 %>%
   filter(Phylum %in% c("Bacteroidetes"))
 ```
+
+# Making a guild tree for Adina, only showing compost and alfalfa resonders
+```{r}
+comp.responders <- attr(venn(list(resp_alf[["label"]], resp_comp[["label"]]), snames = c("Alfalfa", "Compost")), "intersections")$`Compost`
+
+alf.responders <- attr(venn(list(resp_alf[["label"]], resp_comp[["label"]]), snames = c("Alfalfa", "Compost")), "intersections")$`Alfalfa`
+
+OTUs <- c(comp.responders, alf.responders)
+OTUs
+
+reduced.df1 <- df %>%
+  filter(label %in% OTUs) %>%
+  select(-Mix_early_log2FoldChange, -Mix_late_log2FoldChange)
+
+reduced.df.phy <- inc %>%
+  filter_taxa(function(x) sum(x) >= 1, T) 
+
+reduced.df.phy <- prune_taxa(c(reduced.df1$label), reduced.df.phy) 
+
+reduced.df2 = dplyr::mutate(reduced.df1, newlab = paste(Phylum, Genus, sep='|'))
+head(reduced.df2)
+
+reduced.tree <- ggtree(reduced.df.phy)
+test <- reduced.tree %<+% reduced.df2
+
+reduced.df3 <- reduced.df2 %>%
+  select(label, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange) %>%
+  column_to_rownames(var = "label")
+
+reduced.tree.p <- ggtree(test$data) + 
+  geom_tiplab(aes(label=newlab), align=TRUE) 
+
+plot <- reduced.tree.p  %>% 
+  gheatmap(reduced.df3, offset= 2, width= .3, font.size = 3, colnames=T, colnames_angle=-45, hjust=0, color = "gray", low = "yellow", high = "red") +
+  guides(fill=guide_legend(title="Log fold change")) +
+  theme(legend.position = "top") +
+  ggtitle("Temporal enrichment of bacteria in soil amended with compost or alfalfa")
+ggsave("../Figures/AdinasPlot.png", plot = plot, device = "png", width = 25, height = 40, units = "cm", dpi = 350)
+plot + geom_treescale()
+```
+```{r}
+final <- plot + 
+  geom_hilight(node = 206, fill="chartreuse4", alpha=.6, extend = 2.42) +
+  geom_hilight(node = 111, fill="chartreuse4", alpha=.6, extend = 3.025) +
+  geom_hilight(node = 115, fill="chartreuse4", alpha=.6, extend = 2.968) +
+  geom_hilight(node = 188, fill="chartreuse4", alpha=.6, extend = 2.959) +
+  geom_hilight(node = 156, fill="tan4", alpha=.6, extend = 2.644) +
+  geom_hilight(node = 167, fill="chartreuse4", alpha=.6, extend = 2.737) + 
+  geom_hilight(node = 144, fill="tan4", alpha=.6, extend = 2.83) + 
+  geom_hilight(node = 118, fill="tan4", alpha=.6, extend = 3.059) 
+ggsave("../Figures/AdinasFinalPlot.png", plot = final, device = "png", width = 25, height = 40, units = "cm", dpi = 350)
+```
+```{r}
+ 
+collapse <- final %>%
+  collapse(node = 128) +
+  geom_point2(aes(subset=(node==128)), shape=128, size=5, fill='red')
+ggsave("../Figures/AdinasFinalPlotCollapsed.png", plot = collapse, device = "png", width = 25, height = 40, units = "cm", dpi = 350)
+```
+
 
