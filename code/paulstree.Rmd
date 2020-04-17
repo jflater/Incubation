@@ -106,12 +106,15 @@ head(df2)
 resp_p <- tree %<+% df2 
 resp_p  
 
-test <- ggtree(resp_p$data, aes(color = Phylum.x)) +
-  geom_tiplab(aes(label = newlab), size=3, align=TRUE, linesize=.5) +
-  theme_tree() 
+test <- ggtree(resp_p$data) +
+  geom_tiplab(aes(label = newlab, color = Phylum.x), size=3, align=TRUE, linesize=.5) +
+  scale_color_viridis_d()
+
 test
-ggtree(test, aes(color = Phylum))
-p <- ggtree(resp_p, aes(color = Phylum))
+theme_get()
+ggtree(test$data, aes(color = Phylum.x))
+p <- ggtree(resp_p$data, aes(color = Phylum.x))
+p
 ```
 ```{r, message=F, error=F, warning=F}
 colnames(df2)
@@ -123,14 +126,14 @@ df3 <- df2 %>%
 
 write.csv(df3, file ="../data/resp_table.csv")
 final_resp <- test %>% 
-  gheatmap(df3, offset= 35, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
+  gheatmap(df3, offset= 2, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
 final_resp
 ```
 ```{r, message=F, error=F, warning=F}
 
-tree_plot <- final_resp + scale_fill_viridis(option = "plasma") +
-  guides(fill=guide_legend(title="Log fold change"))
+tree_plot <- final_resp + scale_fill_viridis(option = "viridis") +
+  guides(color=guide_legend(title="Log fold change"))
 tree_plot
 ggsave("../Figures/resp_tree_final.png", plot = tree_plot, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ```

@@ -1,0 +1,218 @@
+---
+title: "Phylogenetic tree of responding OTUs"
+author: "Jared Flater"
+date: "1/15/2020"
+output:
+  html_document:
+    df_print: paged
+    fig_width: 8.5
+    fig_height: 11
+    fig_caption: true
+    toc: true
+    toc_float: true
+    number_sections: false
+    code_folding: hide
+---
+```{r setup}
+knitr::opts_knit$set(root.dir = normalizePath("."))
+```
+
+```{r, echo = F, message = F, warning = F, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# The following initializes usage of Bioc devel
+BiocManager::install(version='devel')
+
+BiocManager::install("ggtree")
+```
+
+```{r, echo = F, message = F, warning = F}
+library(reshape2)
+library(tidyverse)
+library(phyloseq)
+library(ggtree)
+library(viridis)
+library(kableExtra)
+library(vegan)
+library(venn)
+```
+# Introduction
+We would like to visualize the phylogenetic relationship among the amendment responders. We do this by sub setting our data to those OTUs with a LFC of 4 in the early and late groups of each treatment. 
+
+* A tree file is necessary for this
+```{r, message=F, error=F, warning=F}
+# We have a tree for this data
+tree <- read.tree("../data/tree.nwk")
+# phyloseq object
+inc.physeq <- readRDS("../data/physeq2020.RDS")
+# Combine the two
+inc <- merge_phyloseq(inc.physeq, tree)
+# Subset to desired samples
+inc <- subset_samples(inc, day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 1, T) 
+
+inc10 <- inc %>%
+  filter_taxa(function(x) sum(x) >= 10, T)
+#Below lines for posterity, I forget how to drop taxa sometimes
+#no.unclass <- subset_taxa(inc, !Phylum=="Bacteria_unclassified")
+#no.unclass <- subset_taxa(no.unclass, !Genus=="Gp6_unclassified")
+
+rm(tree, inc.physeq)
+```
+```{r}
+inc
+inc10
+```
+2/3s of taxa are observed less than 10 times in the incubated samples...is this meaningful? 
+
+# Tree     
+
+This tree is showing comparisons between amendment and reference, the previous example showed differences between amendment and reference plus amendment from the previous time point. This should be a more accurate representation of OTUs responding to the amendment for each 
+
+```{r, message=F, error=F, warning=F}
+# RDS saved from AmendmentDESeq.Rmd
+resp_alf <- readRDS("../data/LFC_alf_OTUs.RDS") %>% dplyr::rename(label = OTU)
+resp_comp <- readRDS("../data/LFC_comp_OTUs.RDS") %>% dplyr::rename(label = OTU)
+resp_mix <- readRDS("../data/LFC_mix_OTUs.RDS") %>% dplyr::rename(label = OTU)
+
+resp <- rbind(resp_alf[1], resp_comp[1], resp_mix[1])
+
+dist_all_resp <- distinct(resp)
+
+df <- resp_alf %>%
+  full_join(resp_comp) %>%
+  full_join(resp_mix)
+```
+
+```{r, message=F, error=F, warning=F}
+inc_resp <- prune_taxa(c(df$label), inc) %>%
+  filter_taxa(function(x) sum(x) >= 1, T)
+```
+
+```{r, message=F, error=F, warning=F}
+#inc_resp <- phy_tree(inc_resp)
+#inc_resp
+tree <- ggtree(inc_resp)
+tree
+```
+```{r, message=F, error=F, warning=F}
+df2 = dplyr::mutate(df, newlab = paste(label, Genus, sep='|'))
+head(df2)
+```
+```{r, message=F, error=F, warning=F}
+resp_p <- tree %<+% df2 
+resp_p  
+
+test <- ggtree(resp_p$data) +
+  geom_tiplab(aes(label = newlab, color = Phylum.x), size=3, align=TRUE, linesize=.5) +
+  scale_color_viridis_d()
+
+test
+
+```
+```{r, message=F, error=F, warning=F}
+
+df3 <- df2 %>%
+  select(label, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
+  column_to_rownames(var = "label")
+
+write.csv(df3, file ="../data/resp_table.csv")
+final_resp <- test %>% 
+  gheatmap(df3, offset= 3, width= .6, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") + scale_fill_viridis(option = "viridis")
+final_resp
+```
+
+## Table of Otus    
+All Otus with LFC greater than 4 in all treatment response groups
+```{r, message=F, error=F, warning=F}
+# Common responders in all amendments and response groups
+new_DF <- df3[rowSums(is.na(df3)) == 0,]
+kable(new_DF) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%")
+```
+
+```{r}
+tree_plot2 <- final_resp +
+  geom_label2(aes(subset = !isTip, label=node), size=2, color="darkblue", alpha=1) 
+ggsave("../Figures/resp_tree_allnodes.png", plot = tree_plot2, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
+tree_plot2
+```
+```{r}
+# These nodes were interesting
+new.labels <- data.frame(node = c(232,201,212,183,186,193,158,132,124,126), 
+                         new.label = c(1,2,3,4,5,6,7,8,9,10))
+
+p <- final_resp  + 
+  geom_hilight(node = 232, fill = "gray", alpha=0.4, extend = 3.45) + 
+  geom_hilight(node = 201, fill = "gray", alpha=0.4, extend = 3.5) + 
+  geom_hilight(node = 212, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 183, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 186, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 193, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 158, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 132, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 124, fill = "gray", alpha=0.4, extend = 1) + 
+  geom_hilight(node = 126, fill = "gray", alpha=0.4, extend = 1) 
+
+pp <- p %<+% new.labels +
+  geom_nodelab(aes(label=new.label), size=3, color="red", alpha = 1, nudge_x =- .1)
+
+ggsave("../Figures/resp_tree_wnodes.png", plot = pp, device = "png", width = 19, height = 32, units = "cm", dpi = 350)
+```
+
+# Responders orginating from amendment? 
+
+Aliens??
+
+```{r}
+df3 <- read_csv("../data/resp_table.csv")
+df3
+treeOTUs <- df3$X1
+alfALIENs <- readRDS("../data/alf.aliens.rds")
+compALIENs <- readRDS("../data/comp.aliens.rds")
+mixALIENs <- readRDS("../data/mix.aliens.rds")
+
+venn(list(treeOTUs, alfALIENs, compALIENs, mixALIENs), snames = c("Responder", "Alf Aliens", "Compost Aliens", "Mix Aliens"))
+
+venn(list(treeOTUs, alfALIENs), snames = c("Responder", "Alf Aliens"))
+a <- venn(list(treeOTUs, alfALIENs), snames = c("Responder", "Alf Aliens"))
+
+
+venn(list(treeOTUs, compALIENs), snames = c("Responder", "Compost Aliens"))
+c <- venn(list(treeOTUs, compALIENs), snames = c("Responder", "Compost Aliens"))
+```
+```{r}
+# Alfalfa
+print("Alfalfa Aliens")
+attr(a, "intersections")$`Responder:Alf Aliens`
+
+# Compost
+print("Compost Aliens")
+attr(c, "intersections")$`Responder:Compost Aliens`
+```
+    
+We have 3 OTUs from compost and alfalfa that are detected as responders! Let's label them on the tree plot
+
+```{r}
+# Make these green, orgianlly from alfalfa
+p$data %>%
+  filter(label %in% c("Otu01028", "Otu01189",  "Otu03173")) %>%
+  select(node)
+# Make these brown, orgianlly from compost
+p$data %>%
+  filter(label %in% c("Otu00887", "Otu00985", "Otu01490")) %>%
+  select(node)
+
+t <- pp + 
+  geom_hilight(node = 4, fill = "green", alpha=0.4) + 
+  geom_hilight(node = 24, fill = "green", alpha=0.4) + 
+  geom_hilight(node = 32, fill = "green", alpha=0.4) + 
+  geom_hilight(node = 62, fill = "brown", alpha=0.4) + 
+  geom_hilight(node = 64, fill = "brown", alpha=0.4) + 
+  geom_hilight(node = 65, fill = "brown", alpha=0.4)
+ggsave("../Figures/resp_tree_walienshilighted.tiff", plot = t, device = "tiff", width = 19, height = 32, units = "cm", dpi = 500)
+t
+```
+
