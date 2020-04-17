@@ -55,7 +55,7 @@ physeq.dist <- ordinate(tps, "PCoA", "bray")
 p1 <- plot_ordination(tps, physeq.dist, type = "samples", color = "treatment") +
   geom_point(size=2) +
   labs(color = "Input material") +
-  scale_color_viridis(discrete = T, option = "viridis", labels = c("Alfalfa", "Soil", "Compost")) + ggplot2::theme_bw()
+  scale_color_viridis(discrete = T, option = "viridis", labels = c( "Soil", "Alfalfa", "Compost")) + ggplot2::theme_bw()
 p1
 theme_my <- function(base_size = 7, base_family = "Palatino")
 {
@@ -100,10 +100,9 @@ RelativeAbundanceDf <- function(physeq) {
     arrange(Phylum)
 }
 
-
 treatment_names <- c(
-  "AlfalfaAmend" = "Alfalfa",
   "AlfalfaSoil" = "Soil",
+  "AlfalfaAmend" = "Alfalfa",
   "CompostAmend" = "Compost")
 
 # Function to plot relative abundance
@@ -126,12 +125,17 @@ top5 <- RelativeAbundanceDf(tps.merged) %>%
   arrange(desc(Abundance)) %>%
   top_n(5, Abundance) %>%
   arrange(Sample, desc(Abundance))
-  
+
+levels(top5$Sample)  
+class(top5$Sample)
+top5$Sample <- as.factor(top5$Sample)
+top5$Sample <- factor(top5$Sample, levels = c("AlfalfaSoil", "AlfalfaAmend", "CompostAmend"))
 kable(top5, "html") %>%
     kable_styling() %>%
     scroll_box(width = "500px", height = "500px")  
 ```
 ```{r figure save, message=F}
+
 plot <- PlotRelativeAbundance(top5) +
   scale_x_discrete(labels = treatment_names) 
 
@@ -159,7 +163,7 @@ theme_my <- function(base_size = 7, base_family = "Palatino")
     legend.title = bold_txt, 
     legend.text = txt) 
 }
-ggsave("../Figures/Fig_1a.tiff", plot = plot + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/Figure_1.tiff", plot = plot + theme_my(), device = "tiff", width = 90, height = 90, units = "mm", dpi = 500)
 ```
 # Inorganic N concentration of inputs
 ```{r}
