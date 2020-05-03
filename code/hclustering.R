@@ -5,9 +5,9 @@ library(ape)
 library(ggtree)
 library(ggplot2)
 
-tree <- read.tree("../data/tree.nwk")
+tree <- read.tree("data/tree.nwk")
 tree
-inc_phy <- readRDS("../data/incubation_physeq_Aug18.RDS")
+inc_phy <- readRDS("data/incubation_physeq_Aug18.RDS")
 
 # Add the tree file to the phyloseq object
 inc_phy <- merge_phyloseq(inc_phy, tree)
@@ -31,7 +31,7 @@ sample_data(inc.physeq) <- data
 sample_data(inc.physeq)$day <- as.factor(sample_data(inc.physeq)$day)
 sample_data(inc.physeq)
 
-rare6k.physeq <- rarefy_even_depth(physeq = no.unclass, sample.size = 6000, rngseed = 3242343, verbose = F)
+rare6k.physeq <- rarefy_even_depth(physeq = inc.physeq, sample.size = 6000, rngseed = 3242343, verbose = F)
 rare6k.physeq
 
 ####Compost####
@@ -53,12 +53,26 @@ compost.clustering$labels <- rownamesforcompost
 
 treec <- as.phylo(compost.clustering)
 treecw <- as.phylo(compost.wunifrac.dist.clustering)
-colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# 
+# 
+# png("Figures/hclust_compost_test.png",height=5,width=6,units='in',res=300)
+# plot(treec, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treec$tip.label, 1, 6)])
+# dev.off()
+# 
+# p <- ggtree(treec) +
+#   geom_tiplab()
+# dd <- as.data.frame(p$data)
+# p %>+% dd +
+#   geom
+# treec$tip.label
 
-
-png("Figures/hclust_compost_test.png",height=5,width=6,units='in',res=300)
-plot(treec, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treec$tip.label, 1, 6)])
-dev.off()
+groupInfo <- split(treec$tip.label, gsub("_\\w+", "", treec$tip.label))
+class(rownamesforcompost)
+treec <- groupOTU(treec, groupInfo)
+plot <- ggtree(treec, branch.length = 'none', layout = "rectangular") + geom_tiplab(aes(color=group), size = 2) 
+composthclust <- plot + theme_my() + theme(legend.position = "none") + scale_color_viridis_d()
+ggsave("Figures/compost_tree.tiff", plot = composthclust, device = "tiff", width = 90, height = 120, units = "mm", dpi = 500)
 
 ####Alfalfa####
 alfalfa.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Alfalfa")) %>%
@@ -75,11 +89,17 @@ alfalfa.clustering <- hclust(alfalfa.physeq.dist, method = "ward.D2")
 alfalfa.clustering$labels <- rownamesforalfalfa
 
 treea <- as.phylo(alfalfa.clustering)
-colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# 
+# png("Figures/hclust_alfalfa.png",height=5,width=6,units='in',res=300)
+# plot(treea, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treea$tip.label, 1, 6)])
+# dev.off()
 
-png("Figures/hclust_alfalfa.png",height=5,width=6,units='in',res=300)
-plot(treea, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treea$tip.label, 1, 6)])
-dev.off()
+groupInfo <- split(treea$tip.label, gsub("_\\w+", "", treea$tip.label))
+treea <- groupOTU(treea, groupInfo)
+plota <- ggtree(treea, branch.length = 'none', layout = "rectangular") + geom_tiplab(aes(color=group), size = 2) 
+alfalfahclust <- plota + theme_my() + theme(legend.position = "none") + scale_color_viridis_d()
+ggsave("Figures/alfalfa_tree.tiff", plot = alfalfahclust, device = "tiff", width = 90, height = 120, units = "mm", dpi = 500)
 
 ####Reference####
 reference.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Reference")) %>%
@@ -96,11 +116,16 @@ reference.clustering <- hclust(reference.physeq.dist, method = "ward.D2")
 reference.clustering$labels <- rownamesforreference
 
 treer <- as.phylo(reference.clustering)
-colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
-
-png("Figures/hclust_reference.png",height=5,width=6,units='in',res=300)
-plot(treer, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treer$tip.label, 1, 6)])
-dev.off()
+# colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# 
+# png("Figures/hclust_reference.png",height=5,width=6,units='in',res=300)
+# plot(treer, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treer$tip.label, 1, 6)])
+# dev.off()
+groupInfo <- split(treer$tip.label, gsub("_\\w+", "", treer$tip.label))
+treer <- groupOTU(treer, groupInfo)
+plotr <- ggtree(treer, branch.length = 'none', layout = "rectangular") + geom_tiplab(aes(color=group), size = 2) 
+referencehclust <- plotr + theme_my() + theme(legend.position = "none") + scale_color_viridis_d()
+ggsave("Figures/reference_tree.tiff", plot = referencehclust, device = "tiff", width = 90, height = 120, units = "mm", dpi = 500)
 
 ####Mix####
 mix.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Mix")) %>%
@@ -117,11 +142,16 @@ mix.clustering <- hclust(mix.physeq.dist, method = "ward.D2")
 mix.clustering$labels <- rownamesformix
 
 treem <- as.phylo(mix.clustering)
-colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# colors <- c("7"="blue", "14"="blue", "21"="blue", "35"="red", "49"="red", "97"="red")
+# 
+# png("Figures/hclust_mix.png",height=5,width=6,units='in',res=300)
+# plot(treem, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treem$tip.label, 1, 6)])
+# dev.off()
 
-png("Figures/hclust_mix.png",height=5,width=6,units='in',res=300)
-plot(treem, type = "unrooted", use.edge.length = TRUE, col = "gray80", cex = .4, font = 1, tip.color=colors[substr(treem$tip.label, 1, 6)])
-dev.off()
-
+groupInfo <- split(treem$tip.label, gsub("_\\w+", "", treem$tip.label))
+treem <- groupOTU(treem, groupInfo)
+plotm <- ggtree(treem, branch.length = 'none', layout = "rectangular") + geom_tiplab(aes(color=group), size = 2) 
+mixhclust <- plotm + theme_my() + theme(legend.position = "none") + scale_color_viridis_d()
+ggsave("Figures/mix_tree.tiff", plot = mixhclust, device = "tiff", width = 90, height = 120, units = "mm", dpi = 500)
 
 

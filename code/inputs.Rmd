@@ -1,0 +1,975 @@
+---
+title: "Soil Microcosm bacterial and chemical analysis"
+output:
+  html_document:
+    df_print: paged
+---
+To understand the microbial response to amendments and to determine which microbes persist and are transfered from amendmen to soil, we need to characterize the microbial community in the amendments and starting soil. In addition, we will look at the inorganic N concentration in the inputs as well as the C:N ratio.
+```{r echo=FALSE}
+library(ggplot2)
+library(vegan)
+library(dplyr)
+library(scales)
+library(grid)
+library(reshape2)
+library(phyloseq)
+library(tidyverse)
+library(DESeq2)
+library(gplots)
+library(ape)
+library(nlme)
+library(emmeans)
+library(xtable)
+library(ggpubr)
+library(purrr)
+library(broom)
+library(gridExtra)
+```
+
+We will subset to the samples of interest:
+```{r eval=FALSE}
+getwd()
+#Read in the phyloseq object, raw object from mothur, see code file mothur_to_phyloseq.R
+inc.raw.physeq <- readRDS("Data/incubation_physeq_Aug18.RDS")
+
+#sample_data(inc.raw.physeq)
+
+# We will be characterizing the ammendments and starting soil, exclude all else
+inc.inputs <- subset_samples(inc.raw.physeq, treatment %in% c("AlfalfaAmend", "AlfalfaSoil", "CompostAmend"))
+```
+And take a look at the library size (# of OTUs) for each sample    
+```{r}
+df <- as.data.frame(sample_data(inc.inputs)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(inc.inputs)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=treatment)) + geom_point()
+```
+We need to add data for inorganic nitrogen concentration and C:N ratio. Inorganic N can be calculated by the sumation of `NH3` and `NO3` and C:N is `C_flash` / `N_flash`:
+```{r}
+# Pull out sample data and make a data.frame, pipe that into mutate() to create the new columns
+df <- df %>%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) 
+
+rownames(df) <- df$i_id
+sample_data(inc.inputs) <- df
+# Sample names have start with a 2, we need to change these
+names <- gsub(pattern = "2mm\\.", replacement = "", x = sample_names(inc.inputs))
+sample_names(inc.inputs) <- names
+sample_names(inc.inputs)
+```    
+```{r}
+colnames(df)
+df
+td <- df %>%
+  select(N_flash, C_flash, NH3, NO3, Inorganic_N, C_N) 
+td
+
+d <- td[c("2mm.dry.alfalfa.soil", "2mm.dry.compost7", "2mm.dry.alfalfa.plant3"),] 
+d
+row.names(d) <- c("Soil", "Compost", "Alfalfa")
+
+td.table <- xtable(d)
+td.table
+```
+Let's check some of the of taxa counts from theses samples
+```{r}
+# Minimum sample size
+min(taxa_sums(otu_table(inc.inputs)))
+
+# Remove singletons and 0 counts
+inc.inputs <- filter_taxa(inc.inputs, function(x) sum(x) >= 2, T)
+min(taxa_sums(otu_table(inc.inputs)))
+```
+
+```{r}
+inc.inputs 
+physeq.dist <- vegdist(t(data.frame(otu_table(inc.inputs))), method = "bray")
+
+PCoA_ord <- ordinate(
+  physeq = inc.inputs, 
+  method = "PCoA",
+  distance = physeq.dist
+)
+
+input.PCoA <- plot_ordination(physeq = inc.inputs, ordination = PCoA_ord, color = "treatment", title = "Input PCoA") + 
+  geom_point(size = 1.5) +
+  theme_bw() +
+  theme(legend.title = element_blank())
+
+input.PCoA 
+```
+
+# Relative Abundance in inputs
+```{r}
+# Put phyloseq object into a df with .02% phylum (glomed at phylum level)
+RelativeAbundanceDf <- function(physeq) {
+    physeq %>% tax_glom(taxrank = "Phylum") %>% transform_sample_counts(function(x) {
+        x/sum(x)
+    }) %>% psmelt() %>% filter(Abundance > 0.02) %>% arrange(Phylum)
+}
+
+# Function to plot relative abundance
+PlotRelativeAbundance <- function(df) {
+    ggplot(df, aes(x = as.factor(treatment), y = Abundance, fill = Phylum)) + 
+    geom_bar(stat = "identity") +
+    theme(axis.title.x = element_blank()) + 
+    guides(fill = guide_legend(reverse = TRUE, keywidth = 1, keyheight = 1)) + 
+    ylab("Relative Abundance (Phyla > 2%) \n") +
+    ggtitle("Phylum Composition of Incubation Microcosms") 
+}
+
+inc.merged <- merge_samples(inc.inputs, "treatment")
+sample_data(inc.merged)$treatment <- levels(sample_data(inc.inputs)$treatment)
+
+plot <- PlotRelativeAbundance(RelativeAbundanceDf(inc.merged))
+plot
+
+sample_data(rare6k.physeq)
+rare.merged <- merge_samples(rare6k.physeq, "Treatment_Day")
+sample_data(rare.merged)$Treatment_Day <- levels(sample_data(rare6k.physeq)$Treatment_Day)
+relllll <- PlotRelativeAbundance(RelativeAbundanceDf(rare.merged)) +
+  facet_grid(~ day, labeller = labeller(day = as_labeller(day_names))) +
+  scale_x_discrete(labels = treatment_names) +
+  rotate_x_text(angle = 45)
+
+tiff("relllll.tif",height=4,width=6,units='in',res=1200)
+relllll
+dev.off()
+treatment_names <- c(
+                    `1` = "Alfalfa",
+                    `2` = "Mix",
+                    `3` = "Compost",
+                    `4` = "Reference"
+                    )
+day_names <- c(
+                    `1` = "0",
+                    `2` = "7",
+                    `3` = "14",
+                    `4` = "21",
+                    `5` = "35",
+                    `6` = "49",
+                    `7` = "97"
+                    )
+sample_data(rare.merged)
+```
+```{r}
+df <- sample_data(inc.merged)
+ggplot(df, aes(x= treatment, y = Inorganic_N)) +
+  geom_bar(aes(color=treatment, fill=treatment), stat = "identity", position = "stack") +
+  ggtitle("Inorganic Nitrogen concentrations in inputs")
+
+ggplot(df, aes(x= treatment, y = C_N)) +
+  geom_bar(aes(color=treatment, fill=treatment), stat = "identity", position = "stack") +
+  ggtitle("Carbon to Nitrogen ratio in inputs")
+```
+```{r}
+#Subset to only days of the incubation, leaving out raw soil and amendments
+inc.physeq <- subset_samples(inc.raw.physeq, day %in% c("0", "7", "14", "21", "35", "49", "97"))
+#Rename treatments to more informative titles
+data <- data.frame(sample_data(inc.physeq)) %>%
+  mutate(treatment = recode(treatment, 'Control' = 'Reference', 'CompAlfa' = 'Mix'))
+rownames(data) <- data$i_id
+sample_data(inc.physeq) <- data
+sample_data(inc.physeq)$day <- as.factor(sample_data(inc.physeq)$day)
+
+sample_data(inc.physeq)
+df <- as.data.frame(sample_data(inc.physeq)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(inc.physeq)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=i_id, y=LibrarySize, color=treatment)) + geom_point() +
+  facet_grid(treatment ~ day) +
+  ggtitle("Lbrary size of sample by treatment and day, large variation") +
+  geom_hline(yintercept = 6000)
+```
+
+# Rarefy to 6k based on rarefactioncurve.R
+```{r}
+rare6k.physeq <- rarefy_even_depth(inc.physeq, sample.size = 6000, rngseed = 15879966) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+```
+# Ordination
+```{r}
+####PCoA
+#######################
+PCOA <- function(physeq){
+  physeq.dist <- vegdist(t(data.frame(otu_table(physeq))), method = "bray")
+  PCoA_ord <- ordinate(
+    physeq = physeq, 
+    method = "PCoA",
+    distance = physeq.dist
+  )
+  trt.PCoA <- plot_ordination(physeq = physeq, ordination = PCoA_ord, 
+                                                   title = "Treatment PCoA") + 
+    geom_point(color = "grey90", size = .25) +
+    theme_bw() +
+    theme(legend.title = element_blank())
+  day.PCoA <- plot_ordination(physeq = physeq, ordination = PCoA_ord, 
+                              title = "Day PCoA") + 
+    geom_point(color = "grey90", size = .25) +
+    theme_bw() +
+    theme(legend.title = element_blank())
+  ord.plot <- grid.arrange(
+    trt.PCoA + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.3, aes(fill = treatment)), 
+    day.PCoA + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.3, aes(fill = day)),
+    nrow = 1
+  )
+}
+PCOA(rare6k.physeq)
+
+tmp.ps <- subset_samples(rare6k.physeq, day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+ord.phy <- ordinate(tmp.ps, method = "PCoA",
+                    distance = vegdist(t(data.frame(otu_table(tmp.ps))), method = "bray"))
+ord <- plot_ordination(tmp.ps, ord.phy, type = "samples", color = "treatment")
+ord + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.3, aes(fill = treatment)) + ggtitle("PCoA of the incubation microcosms grouped by treatment")
+
+ord <- plot_ordination(tmp.ps, ord.phy, type = "samples", color = "day")
+ord + stat_ellipse(geom = "polygon", type = "norm", alpha = 0.3, aes(fill = day)) + ggtitle("PCoA of the incubation microcosms grouped by day")
+ 
+```
+# Constrained Ordinations
+```{r}
+# There aint no stinking soil data on day 0, drop it
+rare6k.physeq <- subset_samples(rare6k.physeq, day %in% c("7", "14", "21", "35", "49", "97")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+# Need to add C:N and Inorganic_N to data for the rare object 
+rd <- sample_data(rare6k.physeq)
+rd <- rd %>%
+  mutate(C_N = C_flash / N_flash, Inorganic_N = NH3 + NO3) 
+
+rownames(rd) <- rd$i_id
+sample_data(rare6k.physeq) <- rd
+
+########################
+# CAP ordinate
+# All treatments
+physeq.dist <- vegdist(t(data.frame(otu_table(rare6k.physeq))), method = "bray")
+cap_ord <- ordinate(
+  physeq = rare6k.physeq, 
+  method = "CAP",
+  distance = physeq.dist,
+  formula = ~ pH + N_flash + C_flash + gravimetric_water_content + NH3 + NO3 + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+)
+
+
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = rare6k.physeq, 
+  ordination = cap_ord, 
+  color = "day", 
+  axes = c(1,2)
+) + 
+  aes(shape = treatment) + 
+  geom_point(aes(colour = day), alpha = 0.8, size = 4) + 
+  geom_point(colour = "grey90", size = 1.5) 
+
+# Now add the environmental variables as arrows
+arrowmat <- vegan::scores(cap_ord, display = "bp")
+
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = CAP1, 
+                 yend = CAP2, 
+                 x = 0, 
+                 y = 0, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+label_map <- aes(x = .8 * CAP1, 
+                 y = .8 * CAP2, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+cap_plot + 
+  geom_segment(
+    mapping = arrow_map, 
+    size = .5, 
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) + facet_grid(treatment ~ .)
+
+########################
+#### Alfalfa
+inc <- subset_samples(rare6k.physeq, treatment %in% c("Alfalfa"))
+inc
+min(taxa_sums(inc))
+inc <- filter_taxa(inc, function(x) sum(x) >= 2, T)
+
+inc.dist <- vegdist(t(data.frame(otu_table(inc))), method = "bray")
+cap_ord <- ordinate(
+  physeq = inc, 
+  method = "CAP",
+  distance = inc.dist,
+  formula = ~ pH + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+)
+
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = inc, 
+  ordination = cap_ord, 
+  color = "day", 
+  axes = c(1,2)
+) + 
+  geom_point(aes(colour = day), alpha = 0.8, size = 4) + 
+  geom_point(colour = "grey90", size = 1.5) 
+
+# Now add the environmental variables as arrows
+arrowmat <- vegan::scores(cap_ord, display = "bp")
+
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = CAP1, 
+                 yend = CAP2, 
+                 x = 0, 
+                 y = 0, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+label_map <- aes(x = .8 * CAP1, 
+                 y = .8 * CAP2, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+Alfalfa <- cap_plot + 
+  geom_segment(
+    mapping = arrow_map, 
+    size = .5, 
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) +
+  ggtitle("Alfalfa CAP")
+
+
+########################
+#### Compost
+inc <- subset_samples(rare6k.physeq, treatment %in% c("Compost"))
+inc
+min(taxa_sums(inc))
+inc <- filter_taxa(inc, function(x) sum(x) >= 2, T)
+
+inc.dist <- vegdist(t(data.frame(otu_table(inc))), method = "bray")
+cap_ord <- ordinate(
+  physeq = inc, 
+  method = "CAP",
+  distance = inc.dist,
+  formula = ~ pH + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+)
+
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = inc, 
+  ordination = cap_ord, 
+  color = "day", 
+  axes = c(1,2)
+) + 
+  geom_point(aes(colour = day), alpha = 0.8, size = 4) + 
+  geom_point(colour = "grey90", size = 1.5) 
+
+# Now add the environmental variables as arrows
+arrowmat <- vegan::scores(cap_ord, display = "bp")
+
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = CAP1, 
+                 yend = CAP2, 
+                 x = 0, 
+                 y = 0, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+label_map <- aes(x = .8 * CAP1, 
+                 y = .8 * CAP2, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+Compost <- cap_plot + 
+  geom_segment(
+    mapping = arrow_map, 
+    size = .5, 
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) +
+  ggtitle("Compost CAP")
+
+########################
+#### Mix
+inc <- subset_samples(rare6k.physeq, treatment %in% c("Mix"))
+inc
+min(taxa_sums(inc))
+inc <- filter_taxa(inc, function(x) sum(x) >= 2, T)
+
+inc.dist <- vegdist(t(data.frame(otu_table(inc))), method = "bray")
+cap_ord <- ordinate(
+  physeq = inc, 
+  method = "CAP",
+  distance = inc.dist,
+  formula = ~ pH + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+)
+
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = inc, 
+  ordination = cap_ord, 
+  color = "day", 
+  axes = c(1,2)
+) + 
+  geom_point(aes(colour = day), alpha = 0.8, size = 4) + 
+  geom_point(colour = "grey90", size = 1.5) 
+
+# Now add the environmental variables as arrows
+arrowmat <- vegan::scores(cap_ord, display = "bp")
+
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = CAP1, 
+                 yend = CAP2, 
+                 x = 0, 
+                 y = 0, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+label_map <- aes(x = .8 * CAP1, 
+                 y = .8 * CAP2, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+Mix <- cap_plot + 
+  geom_segment(
+    mapping = arrow_map, 
+    size = .5, 
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) +
+  ggtitle("Mix CAP")
+
+########################
+#### Control
+inc <- subset_samples(rare6k.physeq, treatment %in% c("Reference"))
+inc
+min(taxa_sums(inc))
+inc <- filter_taxa(inc, function(x) sum(x) >= 2, T)
+
+inc.dist <- vegdist(t(data.frame(otu_table(inc))), method = "bray")
+cap_ord <- ordinate(
+  physeq = inc, 
+  method = "CAP",
+  distance = inc.dist,
+  formula = ~ pH + MBC_mg.kg_per_dry_wt_soil + C_N + Inorganic_N
+)
+
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = inc, 
+  ordination = cap_ord, 
+  color = "day", 
+  axes = c(1,2)
+) + 
+  geom_point(aes(colour = day), alpha = 0.8, size = 4) + 
+  geom_point(colour = "grey90", size = 1.5) 
+
+# Now add the environmental variables as arrows
+arrowmat <- vegan::scores(cap_ord, display = "bp")
+
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = CAP1, 
+                 yend = CAP2, 
+                 x = 0, 
+                 y = 0, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+label_map <- aes(x = .8 * CAP1, 
+                 y = .8 * CAP2, 
+                 shape = NULL, 
+                 color = NULL, 
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+Control <- cap_plot + 
+  geom_segment(
+    mapping = arrow_map, 
+    size = .5, 
+    data = arrowdf, 
+    color = "gray", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 4,  
+    data = arrowdf, 
+    show.legend = FALSE
+  ) +
+  ggtitle("Reference CAP")
+
+grid.arrange(
+  Control,
+  Alfalfa,
+  Compost,
+  Mix,
+  nrow = 2,
+  top = "CAP Plots"
+)
+```
+
+# Clustering Compost samples
+```{r}
+# Rarefy to 10k based on rarefactoncurve.R
+
+compost.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Compost")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T) 
+# get day and i_id for these samples, we will use this list to order the days on the tree
+compost.rownames <- data.frame(sample_data(compost.physeq)) %>%
+  select(day, i_id)
+# List of each samples day label to use as rownames for the clustering plot
+rownamesforcompost <- as.character(compost.rownames$day)
+# Distance matrix, setting binary to T compustes a presence absence for the OTU table
+compost.physeq.dist <- vegdist(t(data.frame(otu_table(compost.physeq))), method = "bray", binary = T)
+# Hierachical clustering to check if days are grouped
+compost.clustering <- hclust(compost.physeq.dist, method = "complete")
+compost.clustering$labels <- rownamesforcompost
+plot(as.phylo(compost.clustering), type = "unrooted", use.edge.length = TRUE, col = "gray80", main = "Compost clustering analysis dendogram")
+```
+# Clustering Alfalfa samples
+```{r}
+alfalfa.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Alfalfa")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+# get day and i_id for these samples, we will use this list to order the days on the tree
+alfalfa.rownames <- data.frame(sample_data(alfalfa.physeq)) %>%
+  select(day, i_id)
+# List of each samples day label to use as rownames for the clustering plot
+rownamesforalfalfa <- as.character(alfalfa.rownames$day)
+# Distance matrix
+alfalfa.physeq.dist <- vegdist(t(data.frame(otu_table(alfalfa.physeq))), method = "bray", binary = T)
+# Hierachical clustering to check if days are grouped
+alfalfa.clustering <- hclust(alfalfa.physeq.dist, method = "complete")
+alfalfa.clustering$labels <- rownamesforalfalfa
+plot(as.phylo(alfalfa.clustering), type = "unrooted", use.edge.length = TRUE, col = "gray80", main = "Alfalfa clustering analysis dendogram")
+
+reference.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Reference")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T) 
+# get day and i_id for these samples, we will use this list to order the days on the tree
+reference.rownames <- data.frame(sample_data(reference.physeq)) %>%
+  select(day, i_id)
+# List of each samples day label to use as rownames for the clustering plot
+rownamesforreference <- as.character(reference.rownames$day)
+# Distance matrix
+reference.physeq.dist <- vegdist(t(data.frame(otu_table(reference.physeq))), method = "bray", binary = T)
+# Hierachical clustering to check if days are grouped
+reference.clustering <- hclust(reference.physeq.dist, method = "complete")
+reference.clustering$labels <- rownamesforreference
+plot(as.phylo(reference.clustering), type = "unrooted", use.edge.length = TRUE, col = "gray80", main = "Reference clustering analysis dendogram")
+
+mix.physeq <- subset_samples(rare6k.physeq, treatment %in% c("Mix")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+# get day and i_id for these samples, we will use this list to order the days on the tree
+mix.rownames <- data.frame(sample_data(mix.physeq)) %>%
+  select(day, i_id)
+# List of each samples day label to use as rownames for the clustering plot
+rownamesformix <- as.character(mix.rownames$day)
+# Distance matrix
+mix.physeq.dist <- vegdist(t(data.frame(otu_table(mix.physeq))), method = "bray", binary = T)
+# Hierachical clustering to check if days are grouped
+mix.clustering <- hclust(mix.physeq.dist, method = "complete")
+mix.clustering$labels <- rownamesformix
+plot(as.phylo(mix.clustering), type = "unrooted", use.edge.length = TRUE, col = "gray80", main = "Mix clustering analysis dendogram")
+```
+ 
+We see three groupings for each treatment, these groups will be know as response gropus, baseline, early and late    
+baseline = day 0
+early = day 7, 14, 21
+late = day 35, 49, 97
+```{r}
+# Use the un-standardized inc.physeq for this
+# Add response group to meta
+inc.physeq.data <- data.frame(sample_data(inc.physeq))
+inc.physeq.data$response.group[inc.physeq.data$day == "0"] <- "baseline" 
+inc.physeq.data$response.group[inc.physeq.data$day %in% c("7", "14", "21")] <- "early" 
+inc.physeq.data$response.group[inc.physeq.data$day %in% c("35", "49", "97")] <- "late" 
+inc.physeq.data <- inc.physeq.data %>%
+  mutate(Treatment_Day = paste(treatment, day, sep = '_'))
+rownames(inc.physeq.data) <- data$i_id
+sample_data(inc.physeq) <- inc.physeq.data
+
+rare6k.physeq.data <- data.frame(sample_data(rare6k.physeq))
+rare6k.physeq.data$response.group[rare6k.physeq.data$day == "0"] <- "baseline" 
+rare6k.physeq.data$response.group[rare6k.physeq.data$day %in% c("7", "14", "21")] <- "early" 
+rare6k.physeq.data$response.group[rare6k.physeq.data$day %in% c("35", "49", "97")] <- "late" 
+sample_data(rare6k.physeq) <- rare6k.physeq.data
+
+
+
+ps_tmp <- get_top_taxa(alfalfa.physeq, n = 1000, relative = TRUE,
+                       discard_other = FALSE, other_label = "Other")
+
+ps_tmp <- name_taxa(ps_tmp, label = "Unkown", species = T, other_label = "Other")
+
+fantaxtic_bar(ps_tmp, color_by = "Phylum", label_by = NULL,
+              facet_by = "response.group", other_label = "Other") + theme(legend.position = "none")
+
+```
+# DESeq: Now we pass this to a DESeq2 function
+```{r eval=FALSE}
+# Functions for use with DESeq
+who_diff_day <- function(DDS, choice1, choice2, phy.object){
+  res = results(DDS, contrast = c("response.group", choice1, choice2), cooksCutoff = FALSE)
+  #plotCounts(AlfalfaDDS, gene="OTU_311", intgroup="day")
+  #Use above line to check if an OTU is increasing or decreasing depending on order of contrast
+  alpha = 0.01
+  #alpha = 0.1
+  sigtab = res[which(res$padj < alpha), ]
+  sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(phy.object)[rownames(sigtab), ], "matrix"))
+  theme_set(theme_bw())
+  scale_fill_discrete <- function(palname = "Set1", ...) {
+    scale_fill_brewer(palette = palname, ...)
+  }
+  # Phylum order
+  x = tapply(sigtab$log2FoldChange, sigtab$Phylum, function(x) max(x))
+  x = sort(x, TRUE)
+  sigtab$Phylum = factor(as.character(sigtab$Phylum), levels=names(x))
+  # Genus order
+  x = tapply(sigtab$log2FoldChange, sigtab$Genus, function(x) max(x))
+  x = sort(x, TRUE)
+  sigtab$Genus = factor(as.character(sigtab$Genus), levels=names(x))
+  #ggplot(sigtab, aes(x=Genus, y=log2FoldChange, color=phylum)) + geom_point(size=2) + 
+  #  theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=1.0)) +
+  #  ggtitle("Day 0 to Day 7")
+  return(sigtab)
+}
+# function plot log2FoldChange 
+log_plot <- function(sigtab,t1){
+  ggplot(sigtab, aes(x=Genus, y=log2FoldChange, color=Phylum)) + geom_point(size=2) + 
+    coord_flip() +
+    ggtitle(t1)
+} 
+```
+
+```{r}
+# Use inc.physeq, not rarefied as DESeq does this
+alf.physeq <- subset_samples(inc.physeq, treatment %in% c("Alfalfa")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+
+log.plot.early.alf <- alf.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("early", "baseline", alf.physeq) %>%
+  log_plot("Alfalfa OTUS in early group that are significantly changing compared to day 0")
+log.plot.early.alf
+
+log.plot.late.alf <- alf.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("late", "early", alf.physeq) %>%
+  log_plot("Alfalfa OTUS in late group that are significantly changing compared to early group")
+log.plot.late.alf
+###
+comp.physeq <- subset_samples(inc.physeq, treatment %in% c("Compost")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+
+log.plot.early.comp <- comp.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("early", "baseline", comp.physeq) %>%
+  log_plot("Compost OTUS in early group that are significantly changing compared to day 0")
+log.plot.early.comp
+
+log.plot.late.comp <- comp.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("late", "early", comp.physeq) %>%
+  log_plot("Compost OTUS in late group that are significantly changing compared to early group")
+log.plot.late.comp
+###
+mix.physeq <- subset_samples(inc.physeq, treatment %in% c("Mix")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+
+log.plot.early.mix <- mix.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("early", "baseline", mix.physeq) %>%
+  log_plot("Mix OTUS in early group that are significantly changing compared to day 0")
+log.plot.early.mix
+
+log.plot.late.mix <- mix.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("late", "early", mix.physeq) %>%
+  log_plot("Mix OTUS in late group that are significantly changing compared to early group")
+log.plot.late.mix
+###
+ref.physeq <- subset_samples(inc.physeq, treatment %in% c("Reference")) %>%
+  filter_taxa(function(x) sum(x) >= 2, T)
+
+log.plot.early.ref <- ref.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("early", "baseline", ref.physeq) %>%
+  log_plot("Reference OTUS in early group that are significantly changing compared to day 0")
+log.plot.early.ref
+
+log.plot.late.ref <- ref.physeq %>%
+  phyloseq_to_deseq2( ~ response.group) %>%
+  DESeq(test = "Wald", fitType = "local") %>%
+  who_diff_day("late", "early", ref.physeq) %>%
+  log_plot("Reference OTUS in late group that are significantly changing compared to early group")
+log.plot.late.ref
+```
+Let's grab the early samples and look at how the OTUs are distributed accross treatments with a venn diagram
+```{r}
+early.alf.otus <- log.plot.early.alf$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2) %>%
+  arrange(desc(log2FoldChange))
+early.alf.otus 
+
+###
+early.comp.otus <- log.plot.early.comp$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+early.comp.otus
+
+###
+early.mix.otus <- log.plot.early.mix$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+early.mix.otus
+
+###
+early.ref.otus <- log.plot.early.ref$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+early.ref.otus
+
+venn <- venn(list(Alfalfa = early.alf.otus$OTU, Reference = early.ref.otus$OTU,
+                  Mix = early.mix.otus$OTU, Compost = early.comp.otus$OTU))
+
+```
+Late responders:
+```{r}
+late.alf.otus <- log.plot.late.alf$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+late.alf.otus 
+
+###
+late.comp.otus <- log.plot.late.comp$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+late.comp.otus
+
+###
+late.mix.otus <- log.plot.late.mix$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+late.mix.otus
+
+###
+late.ref.otus <- log.plot.late.ref$data %>%
+  rownames_to_column() %>%
+  select(OTU = rowname, Phylum, Genus, log2FoldChange) %>%
+  filter(log2FoldChange >= 2)
+late.ref.otus
+
+venn2 <- venn(list(Alfalfa = late.alf.otus$OTU, Reference = late.ref.otus$OTU, Mix = late.mix.otus$OTU, Compost = late.comp.otus$OTU))
+```
+
+```{r}
+alf.early.otus <- attr(venn, "intersections")$Alfalfa
+early.alf <- subset_samples(rare6k.physeq, treatment %in% c("Alfalfa")) %>%
+  subset_samples(day %in% c("0", "7", "14", "21")) 
+only.early.alf <- subset_taxa(early.alf, rownames(tax_table(early.alf)) %in% alf.early.otus)
+
+comp.early.otus <- attr(venn, "intersections")$Compost
+early.comp <- subset_samples(rare6k.physeq, treatment %in% c("Compost")) %>%
+  subset_samples(day %in% c("0", "7", "14", "21")) 
+only.early.comp <- subset_taxa(early.comp, rownames(tax_table(early.comp)) %in% comp.early.otus)
+```
+
+```{r}
+lotu <- paste(c(comp.early.otus, alf.early.otus))
+compalf <- subset_samples(rare6k.physeq, treatment %in% c("Compost", "Alfalfa")) %>%
+  subset_samples(day %in% c("0", "7", "14", "21")) 
+
+only.early.compalf <- subset_taxa(compalf, rownames(tax_table(compalf)) %in% lotu) 
+
+plot_bar(only.early.compalf, x = "response.group", fill = "Order", facet_grid = ~treatment) +
+  geom_bar(aes(color=Order, fill=Order), stat = "identity", position = "stack")
+```
+Repeat for late vs early
+```{r}
+alf.late.otus <- attr(venn2, "intersections")$Alfalfa
+late.alf <- subset_samples(rare6k.physeq, treatment %in% c("Alfalfa")) %>%
+  subset_samples(day %in% c("7", "14", "21", "35", "49", "97")) 
+only.late.alf <- subset_taxa(late.alf, rownames(tax_table(late.alf)) %in% alf.late.otus)
+
+comp.late.otus <- attr(venn2, "intersections")$Compost
+late.comp <- subset_samples(rare6k.physeq, treatment %in% c("Compost")) %>%
+  subset_samples(day %in% c("7", "14", "21", "35", "49", "97")) 
+only.late.comp <- subset_taxa(late.comp, rownames(tax_table(late.comp)) %in% comp.late.otus)
+```
+```{r}
+
+
+rare6k.physeq <- transform_sample_counts(rare6k.physeq, function(x) {
+        x/sum(x)})
+
+lotu2 <- paste(c(comp.late.otus, alf.late.otus))
+compalf.late <- subset_samples(rare6k.physeq, treatment %in% c("Compost", "Alfalfa")) %>%
+  subset_samples(day %in% c("7", "14", "21", "35", "49", "97")) 
+
+only.late.compalf <- subset_taxa(compalf.late, rownames(tax_table(compalf.late)) %in% lotu2)
+
+library(fantaxtic)
+# get top 10 taxa from the late responding group
+late.compalfa.10 <- get_top_taxa(only.late.compalf, length(lotu2), relative = T, discard_other = F, other_label = "Other")
+late.compalfa.10 <- name_taxa(late.compalfa.10, label = "Unknown", species = T, other_label = "Other")
+
+
+fantaxtic_bar(only.late.compalf, color_by = "Genus", label_by = "Phylum", other_label = "Other", facet_by = "response.group", grid_by = "treatment")
+sample_data(late.compalfa.10)
+
+plot_bar(only.late.compalf, x = "response.group", fill = "Order", facet_grid = ~treatment) +
+  geom_bar(aes(color=Order, fill=Order), stat = "identity", position = "stack")
+```
+]
+```{r}
+
+only.early.alf.data <- as.data.frame(tax_table(only.early.alf)) %>%
+  rownames_to_column("OTU")
+df <- merge(only.early.alf.data, early.alf.otus, by = "OTU") %>%
+  select(OTU, Phylum.y, Genus.y, log2FoldChange) %>%
+  arrange(desc(log2FoldChange))
+df
+
+write.table(df, file = "early.alf.resonders.txt", sep = ",", quote = FALSE, row.names = F)
+pie(table(droplevels(df$Phylum.y)))
+
+
+only.late.alf.data <- as.data.frame(tax_table(only.late.alf)) %>%
+  rownames_to_column("OTU")
+df <- merge(only.late.alf.data, late.alf.otus, by = "OTU") %>%
+  select(OTU, Phylum.y, Genus.y, log2FoldChange) %>%
+  arrange(desc(log2FoldChange))
+df
+write.table(df, file = "late.alf.resonders.txt", sep = ",", quote = FALSE, row.names = F)
+pie(table(droplevels(df$Phylum.y)))
+
+only.early.comp.data <- as.data.frame(tax_table(only.early.comp)) %>%
+  rownames_to_column("OTU")
+df <- merge(only.early.comp.data, early.comp.otus, by = "OTU") %>%
+  select(OTU, Phylum.y, Genus.y, log2FoldChange) %>%
+  arrange(desc(log2FoldChange))
+df
+
+write.table(df, file = "early.comp.resonders.txt", sep = ",", quote = FALSE, row.names = F)
+pie(table(droplevels(df$Phylum.y)))
+
+only.late.comp.data <- as.data.frame(tax_table(only.late.comp)) %>%
+  rownames_to_column("OTU")
+df <- merge(only.late.comp.data, late.comp.otus, by = "OTU") %>%
+  select(OTU, Phylum.y, Genus.y, log2FoldChange) %>%
+  arrange(desc(log2FoldChange))
+df
+
+write.table(df, file = "late.comp.resonders.txt", sep = ",", quote = FALSE, row.names = F)
+# Paste this into the console 
+
+tiff("late_comp_reponders_pie.tif",height=4,width=4,units='in',res=1200)
+pie(table(droplevels(df$Phylum.y)))
+dev.off()
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+# OTU Presence Calculation
+```{r}
+# Now calculate presence of each OTU
+abund_val <- function(physeq){
+  # Calculate the frequency of each OTU across all samples
+  physeq = transform_sample_counts(physeq, function(x) {x[x >= (1)] <- 1 
+  return(x)})
+  otu.freq = rowSums(otu_table(physeq))/nsamples(physeq)
+  phyla = as.vector(data.frame(tax_table(physeq)))
+  otuabun = cbind.data.frame(frequency = otu.freq,phyla)
+  return(otuabun)
+}
+early.comp.otu.freq <- abund_val(comp.taxa) %>%
+  rownames_to_column() %>%
+  filter(frequency >= .25)
+early.comp.otu.freq  
+```

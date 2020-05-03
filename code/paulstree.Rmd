@@ -124,7 +124,14 @@ df3 <- df2 %>%
   select(label, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
   column_to_rownames(var = "label")
 
+colnames(df2)
+
+df4 <- df2 %>%
+  select(label, Phylum, Class, Order, Family, Genus, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
+  column_to_rownames(var = "label")
+
 write.csv(df3, file ="../data/resp_table.csv")
+write.csv(df4, file ="../data/Table_5.csv")
 final_resp <- test %>% 
   gheatmap(df3, offset= 2, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
   ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")

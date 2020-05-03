@@ -1,0 +1,20 @@
+---
+title: "SubmitSeqUsingMothur"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+https://mothur.org/wiki/make.sra/
+
+
+On HPCC
+Path to mothur
+`/mnt/research/germs/softwares/mothur/mothur1.40.4`
+
+
+/mnt/research/germs/jared/Incubation/raw/stability.files
+/mnt/research/germs/jared/Incubation/raw/project.file
+/mnt/research/germs/jared/Incubation/raw/stability.tsv

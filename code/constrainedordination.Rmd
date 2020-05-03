@@ -93,10 +93,19 @@ phyord <- ordinate(
   distance = dist,
   formula = ~ day + treatment + NO3 + C_N + C_flash
 )
+class(rare@sam_data$treatment)
+class(rare@sam_data$day)
+class(rare@sam_data$pH)
 veganord <- dbrda(dist ~ day + treatment + NO3 + C_N + C_flash, data = env, add = T)
 
-anova.cca(cap_ord)
+levels(rare@sam_data$treatment)
+levels(rare@sam_data$day)
+levels(rare@sam_data$pH)
+
+ordnotrtday <- dbrda(dist ~ NO3 + C_N + C_flash, data = env, add = T)
 anova.cca(veganord)
+summary(anova.cca(ordnotrtday))
+
 ```
 ```{r}
 # CAP plot
@@ -106,11 +115,71 @@ cap_plot <- plot_ordination(
   shape = "treatment",
   axes = c(1,2)
 ) +
-  geom_point(aes(color = day))
+  geom_point(aes(color = as.factor(day)))
 
 # Now add the environmental variables as arrows
 #  “sites”, “species”, “wa”, “lc”, “bp”, “cn”, “reg”
 arrowmat <- scores(veganord, display = "bp")
+arrowmat
+# Add labels, make a data.frame
+arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
+arrowdf$labels <- c("Day", "Alfalfa", "Mix", "Compost", "Nitrate", "C:N", "Total C")
+# Define the arrow aesthetic mapping
+arrow_map <- aes(xend = dbRDA1,
+                 yend = dbRDA2,
+                 x = 0,
+                 y = 0,
+                 shape = NULL,
+                 color = NULL)
+
+label_map <- aes(x = 1 * dbRDA1,
+                 y = 1 * dbRDA2,
+                 shape = NULL,
+                 color = NULL,
+                 label = labels)
+
+arrowhead = arrow(length = unit(0.02, "npc"))
+
+# Make a new graphic
+ordination <- cap_plot +
+  geom_segment(
+    mapping = arrow_map,
+    size = .5,
+    data = arrowdf, 
+    color = "black", 
+    arrow = arrowhead
+  ) + 
+  geom_text(
+    mapping = label_map, 
+    size = 2.5,  
+    data = arrowdf, 
+    color = "red",
+    show.legend = FALSE
+  ) 
+ordination
+plot <- ordination +
+  theme_my() +
+  labs(color = "Day") +
+  labs(shape = "Treatment") +
+  scale_color_viridis(discrete = T) 
+
+ggsave("../Figures/Constrained.tiff", plot = plot, device = "tiff", width = 140, height = 90, units = "mm", dpi = 500)
+```
+
+No day or treatment
+```{r}
+# CAP plot
+cap_plot <- plot_ordination(
+  physeq = rare,
+  ordination = ordnotrtday,
+  shape = "treatment",
+  axes = c(1,2)
+) +
+  geom_point(aes(color = as.factor(day)))
+
+# Now add the environmental variables as arrows
+#  “sites”, “species”, “wa”, “lc”, “bp”, “cn”, “reg”
+arrowmat <- scores(ordnotrtday, display = "bp")
 arrowmat
 # Add labels, make a data.frame
 arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
@@ -124,8 +193,8 @@ arrow_map <- aes(xend = dbRDA1,
                  color = NULL,
                  label = labels)
 
-label_map <- aes(x = .8 * dbRDA1,
-                 y = .8 * dbRDA2,
+label_map <- aes(x = 1.1 * dbRDA1,
+                 y = 1.1 * dbRDA2,
                  shape = NULL,
                  color = NULL,
                  label = labels)
@@ -154,8 +223,9 @@ plot <- ordination +
   labs(shape = "Treatment") +
   scale_color_viridis(discrete = T) 
 
-ggsave("../Figures/Constrained.png", plot = plot, device = "png", width = 180, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/ConstrainedNotrtday.png", plot = plot, device = "png", width = 140, height = 90, units = "mm", dpi = 500)
 ```
+
 ```{r}
 # Can only show 4 varparts
 mod <- varpart(dist, ~ day, ~ treatment, ~ NO3, ~ C_N, data = env)
@@ -186,7 +256,7 @@ e <- cbind(d, Explains = c(d$Variation[1], diff(as.numeric(d$Variation), lag = 1
 e
 b <- rbind(e,c("Unexplained", 100 - colSums(e[,2, drop = F])))
 b
-b$Variable <- c("Day", "Treatment", "Nitrate", "C:N", "TOC", "Others", "Unexplained")
+b$Variable <- c("Day", "Treatment", "pH", "Nitrate", "C:N", "TOC", "Others", "Unexplained")
 b
 library("janitor")
 b$Explains <- round(as.numeric(b$Explains), digits = 2)

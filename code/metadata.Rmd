@@ -1,0 +1,16 @@
+---
+title: "MetadataTable"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(phyloseq)
+phy <- readRDS("data/physeq2020.RDS")
+meta <- sample_data(phy)
+write.csv(meta, file = "../data/metadata.csv", row.names = T,col.names = T)
+```
+
