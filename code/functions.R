@@ -75,8 +75,8 @@ theme_my <- function(base_size = 7, base_family = "Palatino")
   
   theme_bw(base_size = base_size, base_family = base_family) +
     theme(
-      legend.key = element_blank(), 
-      strip.background = element_blank(), 
+      #legend.key = element_blank(), 
+      #strip.background = element_blank(), 
       
       text = txt, 
       plot.title = txt, 

@@ -97,13 +97,18 @@ tree <- ggtree(inc_resp)
 tree
 ```
 ```{r, message=F, error=F, warning=F}
-df2 = dplyr::mutate(df, newlab = paste(label, Genus, sep='|'))
+df2 = dplyr::mutate(df, newlab = paste(label, Phylum, Genus, sep='|'))
 head(df2)
+df5 <- mutate_if(df2, 
+                is.character, 
+                str_replace_all, pattern = "unclassified", replacement = "uc")
+df6 <- mutate_if(df5, 
+                is.character, 
+                str_replace_all, pattern = "candidate_division", replacement = "C.D.") 
 ```
 ```{r, message=F, error=F, warning=F}
-resp_p <- tree %<+% df2 
-resp_p  
-
+resp_p <- tree %<+% df6 
+#resp_p  
 test <- ggtree(resp_p$data) +
   geom_tiplab(aes(label = newlab, color = Phylum.x), size=3, align=TRUE, linesize=.5) +
   scale_color_viridis_d()
@@ -145,16 +150,16 @@ new.labels <- data.frame(node = c(232,201,212,183,186,193,158,132,124,126),
                          new.label = c(1,2,3,4,5,6,7,8,9,10))
 
 p <- final_resp  + 
-  geom_hilight(node = 232, fill = "gray", alpha=0.4, extend = 3.45) + 
-  geom_hilight(node = 201, fill = "gray", alpha=0.4, extend = 3.59) + 
-  geom_hilight(node = 212, fill = "gray", alpha=0.4, extend = 3.985) + 
-  geom_hilight(node = 183, fill = "gray", alpha=0.4, extend = 3.76) + 
-  geom_hilight(node = 186, fill = "gray", alpha=0.4, extend = 3.77) + 
-  geom_hilight(node = 193, fill = "gray", alpha=0.4, extend = 3.817) + 
-  geom_hilight(node = 158, fill = "gray", alpha=0.4, extend = 3.86) + 
-  geom_hilight(node = 132, fill = "gray", alpha=0.4, extend = 4.09) + 
-  geom_hilight(node = 124, fill = "gray", alpha=0.4, extend = 4.06) + 
-  geom_hilight(node = 126, fill = "gray", alpha=0.4, extend = 4.04) + 
+  geom_hilight(node = 232, fill = "gray", alpha=0.2, extend = 3.45) + 
+  geom_hilight(node = 201, fill = "gray", alpha=0.2, extend = 3.59) + 
+  geom_hilight(node = 212, fill = "gray", alpha=0.2, extend = 3.985) + 
+  geom_hilight(node = 183, fill = "gray", alpha=0.2, extend = 3.76) + 
+  geom_hilight(node = 186, fill = "gray", alpha=0.2, extend = 3.77) + 
+  geom_hilight(node = 193, fill = "gray", alpha=0.2, extend = 3.817) + 
+  geom_hilight(node = 158, fill = "gray", alpha=0.2, extend = 3.86) + 
+  geom_hilight(node = 132, fill = "gray", alpha=0.2, extend = 4.09) + 
+  geom_hilight(node = 124, fill = "gray", alpha=0.2, extend = 4.06) + 
+  geom_hilight(node = 126, fill = "gray", alpha=0.2, extend = 4.04) + 
   labs(fill = "Log2Fold Change", color = "Phylum")
 
 pp <- p %<+% new.labels +
@@ -215,6 +220,6 @@ t <- pp +
   geom_hilight(node = 64, fill = "brown", alpha= .5, extend = .745) + 
   geom_hilight(node = 65, fill = "brown", alpha= .5, extend = .79) 
 ggsave("../Figures/Figure_7.tiff", plot = t + theme_my(), device = "tiff", width = 19, height = 32, units = "cm", dpi = 500)
-t
+
 ```
 

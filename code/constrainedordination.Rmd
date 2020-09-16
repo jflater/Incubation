@@ -94,18 +94,20 @@ phyord <- ordinate(
   formula = ~ day + treatment + NO3 + C_N + C_flash
 )
 class(rare@sam_data$treatment)
+levels(rare@sam_data$treatment)
 class(rare@sam_data$day)
 class(rare@sam_data$pH)
-veganord <- dbrda(dist ~ day + treatment + NO3 + C_N + C_flash, data = env, add = T)
+veganord <- dbrda(dist ~ day + treatment + pH + NO3 + C_N + C_flash, data = env, add = T)
 
 levels(rare@sam_data$treatment)
 levels(rare@sam_data$day)
 levels(rare@sam_data$pH)
 
-ordnotrtday <- dbrda(dist ~ NO3 + C_N + C_flash, data = env, add = T)
+ordnotrtday <- dbrda(dist ~ pH + NO3 + C_N + C_flash, data = env, add = T)
 anova.cca(veganord)
 summary(anova.cca(ordnotrtday))
-
+anova.cca(ordnotrtday)
+adonis(veganord)
 ```
 ```{r}
 # CAP plot
@@ -123,7 +125,7 @@ arrowmat <- scores(veganord, display = "bp")
 arrowmat
 # Add labels, make a data.frame
 arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
-arrowdf$labels <- c("Day", "Alfalfa", "Mix", "Compost", "Nitrate", "C:N", "Total C")
+arrowdf$labels <- c("Day", "Alfalfa", "Mix", "Compost", "pH", "Nitrate", "C:N", "Organic C")
 # Define the arrow aesthetic mapping
 arrow_map <- aes(xend = dbRDA1,
                  yend = dbRDA2,

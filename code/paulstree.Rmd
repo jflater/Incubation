@@ -133,14 +133,13 @@ df4 <- df2 %>%
 write.csv(df3, file ="../data/resp_table.csv")
 write.csv(df4, file ="../data/Table_5.csv")
 final_resp <- test %>% 
-  gheatmap(df3, offset= 2, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
-  ggtitle("Log fold change of genera for each treatment response group. \nMin LFC = 4 when comparing to reference")
+  gheatmap(df3, offset= 2, width= .8, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white", legend_title = "Log2Fold Change")
 final_resp
 ```
 ```{r, message=F, error=F, warning=F}
 
-tree_plot <- final_resp + scale_fill_viridis(option = "viridis") +
-  guides(color=guide_legend(title="Log fold change"))
+tree_plot <- final_resp  +
+  guides(color=guide_legend(title="Phylum"))
 tree_plot
 ggsave("../Figures/resp_tree_final.png", plot = tree_plot, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ```
@@ -169,37 +168,25 @@ tree_plot_data <- tree_plot$data
   
 tree_plot_data
 p <- tree_plot  + 
-  geom_hilight(node = 232, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 201, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 212, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 183, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 186, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 193, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 158, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 132, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 124, fill = "gray", alpha=0.4, extend = 36) + 
-  geom_hilight(node = 126, fill = "gray", alpha=0.4, extend = 36) 
+  geom_hilight(node = 232, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 201, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 212, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 183, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 186, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 193, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 158, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 132, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 124, fill = "gray", alpha=0.4, extend = 3) + 
+  geom_hilight(node = 126, fill = "gray", alpha=0.4, extend = 3) 
 p
 pp <- p %<+% new.labels +
-  geom_nodelab(aes(label=new.label), size=4, color="black", alpha = 1)
+  geom_nodelab(aes(label=new.label), size=4, color="black", alpha = 1) + 
+  scale_fill_viridis_c() +
+  guides(fill=guide_colorbar(title="Log2Fold Change"))
 pp 
-ggsave("../Figures/resp_tree_wnodes.png", plot = pp + guides(color = F), device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
+  
+ggsave("../Figures/resp_tree_wnodes.png", plot = pp, device = "png", width = 18.5, height = 32, units = "cm", dpi = 350)
 ```
-
-```{r}
-tt = '((snail,mushroom),(((sunflower,evergreen_tree),leaves),green_salad));'
-tree = read.tree(text = tt)
-d <- data.frame(label = c('snail','mushroom', 'sunflower',
-                          'evergreen_tree','leaves', 'green_salad'),
-                group = c('animal', 'fungi', 'flowering plant',
-                          'conifers', 'ferns', 'mosses'))
-
-ggtree(tree, linetype = "dashed", size=1, color='firebrick') %<+% d + 
-  xlim(0, 4.5) + ylim(0.5, 6.5) +
-  geom_tiplab(parse="emoji", size=15, vjust=.25) +
-  geom_tiplab(aes(label = group), geom="label", x=3.5, hjust=.5)
-```
-
 
 # Responders orginating from amendment? 
 
