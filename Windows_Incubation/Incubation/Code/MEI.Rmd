@@ -1,0 +1,240 @@
+---
+title: "Mixture Effect Index"
+author: "Jared Flater"
+date: "12/2/2020"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+```{r Libraries, warning=FALSE, message=FALSE, cache=TRUE}
+library(phyloseq)
+library(readr)
+library(tidyverse)
+library(Rmisc)
+library(ggpubr)
+```
+
+# Mixture Effect Index
+
+$MEI_{otu X}=\frac{A_{observed}-A_{expected}}{A_{expected}}= \frac{A_{c + a}-\left ( \frac{A_{a}+A_{c}}{2} \right )}{\frac{A_{a}+A_{c}}{2}}$
+
+Aobserved = OTU X abundance of what you observed in the mixed treatment (i.e. Ac+a)
+Aexpected = OTU X abundance of what you expect to find in the mixed treatment based on adding both INDIVUAL effects together and dividing by two.
+Ac+a = abundance of OTU X in Compost+Alfalfa amendment
+Ac = abundance of OTU X in Compost ONLY amendment
+Aa = abundance of OTU X in Alfalfa ONLY amendment
+
+How to interpret…
+MEI ~ 1 for an OTU = non-additive effect, or not interaction      
+
+MEI >> 1 for an OTU = synergistic effect of adding Compost & Alfalfa together    
+
+MEI << 1 for an OTU = antagonistic effect of adding Compost & Alfalfa together     
+
+It would be neat to see what bacteria species/clades have strong positive, or negative, MEI’s.  
+
+It would be cool to look at this MEI through time (for inorganic N and MBC too).  I think you could make a PCA or nmds of MEI scores too and look at how it relates to other things you measured (nitrate, pH, etc…)!  
+
+For more information on MEI see… 
+Wardle, D. A., Bonner, K. I., & Nicholson, K. S. (1997). Biodiversity and plant litter: experimental evidence which does not support the view that enhanced species richness improves ecosystem function. Oikos, 247-258.
+Meier, C. L., & Bowman, W. D. (2010). Chemical composition and diversity influence non-additive effects of litter mixtures on soil carbon and nitrogen cycling: implications for plant species loss. Soil Biology and Biochemistry, 42(9), 1447-1454.
+McDaniel, M. D., Grandy, A. S., Tiemann, L. K., & Weintraub, M. N. (2016). Eleven years of crop diversification alters decomposition dynamics of litter mixtures incubated with soil. Ecosphere, 7(8), e01426.
+
+## Incubation data and taxonomy 
+
+```{r Data, echo=F, warning=FALSE, message=FALSE, cache=TRUE}
+inc <- readRDS("../Data/physeq2020.RDS") %>%
+  rarefy_even_depth(sample.size = 6000, rngseed = 0202020, trimOTUs = T)
+```
+```{r Phyla colors}
+### Scale color for phyla, consistent phyla colors across plots
+#Function to make all phyla colors consistent
+phylalist <- data.frame(tax_table(inc),row.names = NULL) %>%
+  select(Phylum) %>%
+  unique() 
+phylalist$Phylum <- as.character(phylalist$Phylum)
+phylalist$Phylum[is.na(phylalist$Phylum)] <- "Unclassified"
+# this package will generate a palette based on number and desired colors
+library(colorspace)
+colors <- sequential_hcl(n_distinct(phylalist), palette = "viridis") %>%
+  sample() %>%
+  setNames(phylalist$Phylum)
+```
+
+# MEI function
+First start out by looking at all samples, later we will do calculation for early and late groups
+
+```{r MEI, cache=TRUE}
+MEI <- function(phy, taxa){
+  OTU <- taxa
+  Aca <- subset_samples(phy, treatment %in% "Mix") %>%
+    transform_sample_counts(function(x) {x/sum(x)}) %>%
+    prune_taxa(taxa = OTU) %>%
+    sample_sums() %>%
+    mean()
+  Aa <- subset_samples(phy, treatment %in% "Alfalfa") %>%
+    transform_sample_counts(function(x) {x/sum(x)}) %>%
+    prune_taxa(taxa = OTU) %>%
+    sample_sums() %>%
+    mean()
+  Ac <- subset_samples(phy, treatment %in% "Compost") %>%
+    transform_sample_counts(function(x) {x/sum(x)}) %>%
+    prune_taxa(taxa = OTU) %>%
+    sample_sums() %>%
+    mean()
+  MEI <- (Aca - ((Aa + Ac)/2))/((Aa + Ac)/2)
+  return(MEI)
+}
+```
+
+```{r Responder Data}
+resp_table <- read_csv("../Data/resp_table.csv")
+```
+```{r Map MEI, cache=TRUE}
+MEI_resonder <- resp_table$X1 %>%
+  map( ~ MEI(inc, taxa = .))
+
+resp_table$MEI <- unlist(MEI_resonder)
+```
+```{r Prune}
+Taxa_responders <- prune_taxa(resp_table$X1, inc) %>%
+  tax_table()
+```
+
+```{r Plot 1}
+resp_table <- cbind(resp_table, as.data.frame(Taxa_responders))
+summarySE(resp_table, measurevar = "MEI", groupvars = "Phylum") %>%
+  ggplot(aes(x = Phylum, y = MEI, fill = Phylum)) + 
+  geom_bar(position=position_dodge(), stat="identity") +
+  geom_errorbar(aes(ymin = MEI - ci, ymax = MEI + ci),
+                width=.2, position=position_dodge(.9)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_color_manual(aesthetics = "fill", values = colors) +
+  theme_classic2() +
+  rotate_x_text(45)
+```
+
+# All responding OTUs
+
+```{r Plot 2, fig.height=14, fig.width=10}
+ggplot(resp_table, aes(x = reorder(X1, -MEI), y = MEI, fill = Phylum)) +
+  geom_bar(stat = "identity") + coord_flip() + 
+  scale_color_manual(aesthetics = "fill", values = colors) +
+  theme_classic2()
+```
+
+# Ammendment responding OTUs
+
+```{r Responding OTU Data}
+alf_OTUS <- readRDS("../Data/LFC_alf_OTUs.RDS")
+comp_OTUS <- readRDS("../Data/LFC_comp_OTUs.RDS")
+mix_OTUS <- readRDS("../Data/LFC_mix_OTUs.RDS")
+```
+
+```{r MAP Responder, cache=TRUE}
+alf_MEI <- alf_OTUS$OTU %>%
+  map( ~ MEI(inc, taxa = .))
+
+comp_MEI <- comp_OTUS$OTU %>%
+  map( ~ MEI(inc, taxa = .))
+
+mix_MEI <- mix_OTUS$OTU %>%
+  map( ~ MEI(inc, taxa = .)) 
+```
+
+```{r Assign MEI}
+alf_OTUS$MEI <- unlist(alf_MEI)
+comp_OTUS$MEI <- unlist(comp_MEI)
+mix_OTUS$MEI <- unlist(mix_MEI)
+```
+
+## Plot alf responder OTUs' MEI
+
+```{r Plot 3, fig.height=8}
+ggplot(alf_OTUS, aes(x = reorder(OTU, -MEI), y = MEI, fill = Phylum)) +
+  geom_bar(stat = "identity") + coord_flip() + 
+  scale_color_manual(aesthetics = "fill", values = colors) +
+  theme_classic2()
+```
+
+## Plot comp responder OTUs' MEI
+
+```{r Plot 4, fig.height=8}
+ggplot(comp_OTUS, aes(x = reorder(OTU, -MEI), y = MEI, fill = Phylum)) +
+  geom_bar(stat = "identity") + coord_flip() +
+  scale_color_manual(aesthetics = "fill", values = colors) + 
+  theme_classic2() 
+```
+
+## Plot mix responder OTUs' MEI
+
+```{r Plot 5, fig.height=8}
+ggplot(mix_OTUS, aes(x = reorder(OTU, -MEI), y = MEI, fill = Phylum)) +
+  geom_bar(stat = "identity") + coord_flip() + 
+  scale_color_manual(aesthetics = "fill", values = colors) +
+  theme_classic2() +
+  scale_fill_viridis_d()
+```
+
+
+# Otu02419
+
+```{r}
+library(phylosmith)
+myTaxa = "Otu02419"
+test <- inc %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(taxa = myTaxa) %>%
+  prune_samples(sample_sums(.) > .0000001, .)
+  
+plot_bar(test, fill = "OTU", x = "TreatmentAndDay") +
+  theme_classic2() +
+  coord_flip() +
+  rotate_x_text(0) +
+  scale_fill_viridis_d()
+```
+
+In this it appears that perhaps day 35 was creating the high MEI value for OTU 02419...the first plot i generated was a little misleading...not as strong as MEI as indicated? 
+
+Also note, that each bar is split into sections representative of a sample, for this experiment we had 12 replicates for each combination of treatment and day, this taxa was only detected in at most 5 out of 12 samples. 
+
+Make a crazy plot of all mix responders with MEI > 1
+
+```{r}
+myTaxa <- mix_OTUS %>%
+  filter(MEI > 0) %>%
+  select(OTU)
+  
+myTaxa
+
+test <- inc %>%
+  subset_samples(treatment %in% c("Alfalfa", "Compost", "Mix") & day != 0) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(taxa = myTaxa$OTU) %>%
+  prune_samples(sample_sums(.) > .0000001, .)
+  
+plot_bar(test, fill = "OTU", x = "TreatmentAndDay") +
+  theme_classic2() +
+  coord_flip() +
+  rotate_x_text(0) +
+  scale_fill_viridis_d()
+```
+
+# Otu00022
+
+```{r}
+myTaxa = "Otu00022"
+test <- inc %>%
+  subset_samples(treatment %in% c("Alfalfa", "Compost", "Mix") & day != 0) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(taxa = myTaxa) %>%
+  prune_samples(sample_sums(.) > .0000001, .)
+  
+plot_bar(test, fill = "OTU", x = "TreatmentAndDay") +
+  theme_classic2() +
+  coord_flip() +
+  rotate_x_text(0) +
+  scale_fill_viridis_d()
+```
+

@@ -125,7 +125,7 @@ arrowmat <- scores(veganord, display = "bp")
 arrowmat
 # Add labels, make a data.frame
 arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
-arrowdf$labels <- c("Day", "Alfalfa", "Mix", "Compost", "pH", "Nitrate", "C:N", "Organic C")
+arrowdf$labels <- c("Day", "+A", "+AC", "+C", "pH", "Nitrate", "C:N", "Organic C")
 # Define the arrow aesthetic mapping
 arrow_map <- aes(xend = dbRDA1,
                  yend = dbRDA2,
@@ -134,8 +134,8 @@ arrow_map <- aes(xend = dbRDA1,
                  shape = NULL,
                  color = NULL)
 
-label_map <- aes(x = 1 * dbRDA1,
-                 y = 1 * dbRDA2,
+label_map <- aes(x = 1.1 * dbRDA1,
+                 y = 1.1 * dbRDA2,
                  shape = NULL,
                  color = NULL,
                  label = labels)
@@ -148,14 +148,13 @@ ordination <- cap_plot +
     mapping = arrow_map,
     size = .5,
     data = arrowdf, 
-    color = "black", 
+    color = "gray", 
     arrow = arrowhead
   ) + 
   geom_text(
     mapping = label_map, 
     size = 2.5,  
     data = arrowdf, 
-    color = "red",
     show.legend = FALSE
   ) 
 ordination

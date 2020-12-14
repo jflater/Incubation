@@ -89,10 +89,10 @@ p <- ggplot(data = data, aes(x = day, y = Inorganic_N)) +
   facet_wrap(~treatment) + 
   scale_color_viridis(discrete = T, option = "viridis")
 
-theme_my <- function(base_size = 7, base_family = "Palatino")
+theme_my <- function(base_size = 10, base_family = "Palatino")
 {
-  txt <- element_text(size = 6, colour = "black", face = "plain")
-  bold_txt <- element_text(size = 7, colour = "black", face = "bold")
+  txt <- element_text(size = 9, colour = "black", face = "plain")
+  bold_txt <- element_text(size = 10, colour = "black", face = "bold")
 
   theme_bw(base_size = base_size, base_family = base_family) +
   theme(
@@ -180,8 +180,8 @@ p <- day_ggboxplot(data) +
   facet_grid(~day) +
   theme(legend.position = "none")
 p
-ggsave("../Figures/Figure_3.tiff", plot = p + theme_my() +
-  theme(legend.position = "none"), device = "tiff", width = 190, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/Figure_3.png", plot = p + theme_my() +
+  theme(legend.position = "none"), device = "png", width = 7, height = 4, dpi = 350)
 ```
 
 Using ggboxplot we can compare all groups
@@ -338,8 +338,8 @@ p <- day_ggboxplot(data) +
   facet_grid(~day) +
   theme(legend.position = "none")
 p
-ggsave("../Figures/Figure_4.tiff", plot = p + theme_my() +
-  theme(legend.position = "none"), device = "tiff", width = 190, height = 90, units = "mm", dpi = 500)
+ggsave("../Figures/Figure_4.png", plot = p + theme_my() +
+  theme(legend.position = "none"), device = "png", width = 7, height = 4, dpi = 350)
 ```
 Make a table with sig letters for all days
 ```{r}

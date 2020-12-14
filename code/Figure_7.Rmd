@@ -90,6 +90,85 @@ inc_resp <- prune_taxa(c(df$label), inc) %>%
   filter_taxa(function(x) sum(x) >= 1, T)
 ```
 
+```{r}
+#### Alfalfa ###
+alf_resp_early <- subset_samples(inc, Treatment_Response %in% "Alfalfa_early") %>%
+  filter_taxa(function(x) sum(x) >= 1, T) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(c(resp_alf$label), .) %>%  
+  psmelt() %>%
+  group_by(OTU) %>%
+  summarise(Alfalfa_early_Abundance = mean(Abundance)) 
+
+alf_resp_late <- subset_samples(inc, Treatment_Response %in% "Alfalfa_late") %>%
+  filter_taxa(function(x) sum(x) >= 1, T) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(c(resp_alf$label), .) %>% 
+  psmelt() %>%
+  group_by(OTU) %>%
+  summarise(Alfalfa_late_Abundance = mean(Abundance)) 
+
+#### Compost ###
+comp_resp_early <- subset_samples(inc, Treatment_Response %in% "Compost_early") %>%
+  filter_taxa(function(x) sum(x) >= 1, T) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>% 
+  prune_taxa(c(resp_comp$label), .) %>% 
+  psmelt() %>%
+  group_by(OTU) %>%
+  summarise(Compost_early_Abundance = mean(Abundance)) 
+
+comp_resp_late <- subset_samples(inc, Treatment_Response %in% "Compost_late") %>%
+  filter_taxa(function(x) sum(x) >= 1, T) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(c(resp_comp$label), .) %>% 
+  psmelt() %>%
+  group_by(OTU) %>%
+  summarise(Compost_late_Abundance = mean(Abundance)) 
+
+#### Mix ###
+mix_resp_early <- subset_samples(inc, Treatment_Response %in% "Mix_early") %>%
+  filter_taxa(function(x) sum(x) >= 1, T) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>% 
+  prune_taxa(c(resp_mix$label), .) %>% 
+  psmelt() %>%
+  group_by(OTU) %>%
+  summarise(Mix_early_Abundance = mean(Abundance)) 
+
+mix_resp_late <- subset_samples(inc, Treatment_Response %in% "Mix_late") %>%
+  filter_taxa(function(x) sum(x) >= 1, T) %>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  prune_taxa(c(resp_mix$label), .) %>% 
+  psmelt() %>%
+  group_by(OTU) %>%
+  summarise(Mix_late_Abundance = mean(Abundance)) 
+```
+```{r}
+alf_abund <- alf_resp_early %>%
+  left_join(alf_resp_late, by = "OTU")
+alf_abund
+
+comp_abund <- comp_resp_early %>%
+  left_join(comp_resp_late, by = "OTU")
+comp_abund
+
+mix_abund <- mix_resp_early %>%
+  left_join(mix_resp_late, by = "OTU")
+mix_abund
+
+# abund <- rbind(alf_abund[1], comp_abund[1], mix_abund[1])
+
+abund <- alf_abund %>%
+  full_join(comp_abund) %>%
+  full_join(mix_abund) 
+
+abund 
+
+testtest <- df %>%
+  dplyr::rename(OTU = label) %>%
+  left_join(abund, by = "OTU")
+write_csv(testtest, file = "../data/lfcandabund.csv")
+```
+
 ```{r, message=F, error=F, warning=F}
 #inc_resp <- phy_tree(inc_resp)
 #inc_resp
@@ -97,7 +176,7 @@ tree <- ggtree(inc_resp)
 tree
 ```
 ```{r, message=F, error=F, warning=F}
-df2 = dplyr::mutate(df, newlab = paste(label, Phylum, Genus, sep='|'))
+df2 = dplyr::mutate(testtest, newlab = paste(OTU, Phylum, Genus, sep='  '))
 head(df2)
 df5 <- mutate_if(df2, 
                 is.character, 
@@ -109,22 +188,43 @@ df6 <- mutate_if(df5,
 ```{r, message=F, error=F, warning=F}
 resp_p <- tree %<+% df6 
 #resp_p  
-test <- ggtree(resp_p$data) +
-  geom_tiplab(aes(label = newlab, color = Phylum.x), size=3, align=TRUE, linesize=.5) +
-  scale_color_viridis_d()
+test <- ggtree(resp_p$data, ) +
+  geom_tiplab(aes(label = newlab), size=2, align=TRUE) 
 
 test
 
 ```
 ```{r, message=F, error=F, warning=F}
 
+colnames(df2)
+head(df2$OTU)
+
 df3 <- df2 %>%
-  select(label, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
-  column_to_rownames(var = "label")
+  select(OTU, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
+  column_to_rownames(var = "OTU")
+
+df5 <- df2 %>%
+  select(OTU, Alfalfa_Early = Alfalfa_early_Abundance, Alfalfa_Late = Alfalfa_late_Abundance, Compost_Early = Compost_early_Abundance, Compost_Late = Compost_late_Abundance, Mix_Early = Mix_early_Abundance, Mix_Late = Mix_late_Abundance) %>%
+  column_to_rownames(var = "OTU")
+
+colnames(df2)
+
+df4 <- df2 %>%
+  select(OTU, Phylum, Class, Order, Family, Genus, Alfalfa_Early = Alfalfa_early_log2FoldChange, Alfalfa_Late = Alfalfa_late_log2FoldChange, Compost_Early = Compost_early_log2FoldChange, Compost_Late = Compost_late_log2FoldChange, Mix_Early = Mix_early_log2FoldChange, Mix_Late = Mix_late_log2FoldChange) %>%
+  column_to_rownames(var = "OTU")
 
 write.csv(df3, file ="../data/resp_table.csv")
+write.csv(df4, file ="../data/Table_5.csv")
+
 final_resp <- test %>% 
-  gheatmap(df3, offset= 3, width= .6, font.size = 2.5, colnames=T, colnames_angle=-45, hjust=0, color = "white") + scale_fill_viridis(option = "viridis")
+  gheatmap(df3, offset= 7.4, width= 1.5, font.size = 2, colnames=T, colnames_angle=-45, hjust=0, color = "white", colnames_position = 'bottom') +
+    scale_fill_viridis_c(option="D", name = "Log2FC")
+final_resp
+#install.packages("ggnewscale")
+library(ggnewscale)
+p2 <- final_resp + new_scale_fill()
+final_resp <- gheatmap(p2, df5, offset= 9.5, width= 1.5, font.size = 2, colnames=T, colnames_angle=-45, hjust=0, color = "white") +
+    scale_fill_viridis_c(option="A", name = "Relative abundance") 
 final_resp
 ```
 
@@ -150,21 +250,20 @@ new.labels <- data.frame(node = c(232,201,212,183,186,193,158,132,124,126),
                          new.label = c(1,2,3,4,5,6,7,8,9,10))
 
 p <- final_resp  + 
-  geom_hilight(node = 232, fill = "gray", alpha=0.2, extend = 3.45) + 
-  geom_hilight(node = 201, fill = "gray", alpha=0.2, extend = 3.59) + 
-  geom_hilight(node = 212, fill = "gray", alpha=0.2, extend = 3.985) + 
-  geom_hilight(node = 183, fill = "gray", alpha=0.2, extend = 3.76) + 
-  geom_hilight(node = 186, fill = "gray", alpha=0.2, extend = 3.77) + 
-  geom_hilight(node = 193, fill = "gray", alpha=0.2, extend = 3.817) + 
-  geom_hilight(node = 158, fill = "gray", alpha=0.2, extend = 3.86) + 
-  geom_hilight(node = 132, fill = "gray", alpha=0.2, extend = 4.09) + 
-  geom_hilight(node = 124, fill = "gray", alpha=0.2, extend = 4.06) + 
-  geom_hilight(node = 126, fill = "gray", alpha=0.2, extend = 4.04) + 
-  labs(fill = "Log2Fold Change", color = "Phylum")
+  geom_hilight(node = 232, fill = "gray", alpha=0.5, extend = 7.95) + 
+  geom_hilight(node = 201, fill = "gray", alpha=0.5, extend = 8.09) + 
+  geom_hilight(node = 212, fill = "gray", alpha=0.5, extend = 8.48) + 
+  geom_hilight(node = 183, fill = "gray", alpha=0.5, extend = 8.27) + 
+  geom_hilight(node = 186, fill = "gray", alpha=0.5, extend = 8.25) + 
+  geom_hilight(node = 193, fill = "gray", alpha=0.5, extend = 8.3) + 
+  geom_hilight(node = 158, fill = "gray", alpha=0.5, extend = 8.35) + 
+  geom_hilight(node = 132, fill = "gray", alpha=0.5, extend = 8.59) + 
+  geom_hilight(node = 124, fill = "gray", alpha=0.5, extend = 8.55) + 
+  geom_hilight(node = 126, fill = "gray", alpha=0.5, extend = 8.57) 
 
 pp <- p %<+% new.labels +
-  geom_nodelab(aes(label=new.label), size=3, color="red", alpha = 1, nudge_x =- .1, nudge_y = .5)
-
+  geom_nodelab(aes(label=new.label), size=3, color="red", alpha = 1, nudge_x = .7) 
+pp
 ggsave("../Figures/resp_tree_wnodes.png", plot = pp, device = "png", width = 19, height = 32, units = "cm", dpi = 350)
 ```
 
@@ -218,8 +317,10 @@ t <- pp +
   geom_hilight(node = 32, fill = "green4", alpha= .5, extend = .75) + 
   geom_hilight(node = 62, fill = "brown", alpha= .5, extend = .7) + 
   geom_hilight(node = 64, fill = "brown", alpha= .5, extend = .745) + 
-  geom_hilight(node = 65, fill = "brown", alpha= .5, extend = .79) 
-ggsave("../Figures/Figure_7.tiff", plot = t + theme_my(), device = "tiff", width = 19, height = 32, units = "cm", dpi = 500)
+  geom_hilight(node = 65, fill = "brown", alpha= .5, extend = .79) + 
+  scale_y_continuous(expand = expansion(mult = c(.05, 0))) +
+  theme(legend.title = element_text(size = 6),legend.text = element_text(size = 6))
+ggsave("../Figures/Figure_7.tiff", plot = t , device = "tiff", width = 140, height = 240, units = "mm", dpi = 500)
 
 ```
 
